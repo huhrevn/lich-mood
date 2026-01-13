@@ -14,9 +14,10 @@ interface CalendarGridProps {
     date: Date;
     onDateChange: (newDate: Date) => void;
     onTogglePicker?: () => void;
+    events?: any[]; // <--- 1. THÊM PROP NHẬN SỰ KIỆN
 }
 
-const CalendarGrid: React.FC<CalendarGridProps> = ({ date, onDateChange, onTogglePicker }) => {
+const CalendarGrid: React.FC<CalendarGridProps> = ({ date, onDateChange, onTogglePicker, events = [] }) => {
     
     const { days, emptySlots } = useMemo(() => {
         const year = date.getFullYear();
@@ -139,6 +140,16 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ date, onDateChange, onToggl
                     const isSunday = dayInfo.dayOfWeek === 0;
                     const isSaturday = dayInfo.dayOfWeek === 6;
 
+                    // --- 2. LỌC SỰ KIỆN CỦA NGÀY NÀY ---
+                    const dayEvents = events?.filter(event => {
+                        const eventDate = new Date(event.start);
+                        return eventDate.getDate() === dayInfo.date.getDate() &&
+                               eventDate.getMonth() === dayInfo.date.getMonth() &&
+                               eventDate.getFullYear() === dayInfo.date.getFullYear();
+                    });
+                    const hasEvent = dayEvents && dayEvents.length > 0;
+                    // ------------------------------------
+
                     return (
                         <div 
                             key={dayInfo.day} 
@@ -177,6 +188,26 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ date, onDateChange, onToggl
                             `}>
                                 {dayInfo.lunarDay === 1 ? `${dayInfo.lunarDay}/${dayInfo.lunarMonth}` : dayInfo.lunarDay}
                             </span>
+
+                            {/* --- 3. HIỂN THỊ DẤU CHẤM SỰ KIỆN --- */}
+                            {hasEvent && (
+                                <div className={`absolute bottom-1 md:bottom-2 left-1/2 -translate-x-1/2 flex gap-0.5`}>
+                                    {/* Vẽ tối đa 3 chấm nếu có nhiều sự kiện */}
+                                    {dayEvents.slice(0, 3).map((_, idx) => (
+                                        <div 
+                                            key={idx} 
+                                            className={`size-1 md:size-1.5 rounded-full 
+                                                ${isSelected ? 'bg-white' : 'bg-[#4A7B4F]'}
+                                            `}
+                                        ></div>
+                                    ))}
+                                    {dayEvents.length > 3 && (
+                                        <div className={`size-1 md:size-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-[#4A7B4F]'}`}></div>
+                                    )}
+                                </div>
+                            )}
+                            {/* -------------------------------------- */}
+
                         </div>
                     );
                 })}

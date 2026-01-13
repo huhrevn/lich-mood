@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { HashRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
 import BottomNav from './components/BottomNav';
@@ -13,6 +12,8 @@ import WorldClockScreen from './screens/WorldClockScreen';
 import PrayersScreen from './screens/PrayersScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import { LanguageProvider } from './contexts/LanguageContext';
+import { EventProvider } from './contexts/EventContext'; // <--- 1. Import Kho sự kiện
+import UserAuth from './UserAuth'; // <--- 2. Import nút đăng nhập (như bài trước)
 
 const Layout: React.FC = () => {
     return (
@@ -35,21 +36,26 @@ const Layout: React.FC = () => {
 const App: React.FC = () => {
   return (
     <LanguageProvider>
+      <EventProvider> {/* <--- 3. Bọc Kho sự kiện vào đây để nuôi cả App */}
         <Router>
-        <Routes>
-            <Route path="/" element={<Layout />}>
-            <Route index element={<HomePage />} />
-            <Route path="calendar" element={<CalendarPage />} />
-            <Route path="fortune" element={<FortuneScreen />} />
-            <Route path="greetings" element={<GreetingsScreen />} />
-            <Route path="journal" element={<JournalScreen />} />
-            <Route path="converter" element={<ConverterScreen />} />
-            <Route path="world-clock" element={<WorldClockScreen />} />
-            <Route path="prayers" element={<PrayersScreen />} />
-            <Route path="settings" element={<SettingsScreen />} />
-            </Route>
-        </Routes>
+            {/* Nút đăng nhập nằm đè lên mọi thứ */}
+            <UserAuth /> 
+            
+            <Routes>
+                <Route path="/" element={<Layout />}>
+                    <Route index element={<HomePage />} />
+                    <Route path="calendar" element={<CalendarPage />} />
+                    <Route path="fortune" element={<FortuneScreen />} />
+                    <Route path="greetings" element={<GreetingsScreen />} />
+                    <Route path="journal" element={<JournalScreen />} />
+                    <Route path="converter" element={<ConverterScreen />} />
+                    <Route path="world-clock" element={<WorldClockScreen />} />
+                    <Route path="prayers" element={<PrayersScreen />} />
+                    <Route path="settings" element={<SettingsScreen />} />
+                </Route>
+            </Routes>
         </Router>
+      </EventProvider>
     </LanguageProvider>
   );
 };
