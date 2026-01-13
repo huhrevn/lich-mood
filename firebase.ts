@@ -4,7 +4,12 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
 // --- THAY THẾ ĐOẠN NÀY BẰNG CODE TRÊN WEB FIREBASE ---
 const firebaseConfig = {
-  apiKey: "AIzaSyDxxxx...", 
+  apiKey: "AIzaSyAcLKPLV7cEdDWYsjf4tgceHT4TPRV2aaU",
+  authDomain: "lich-mood.firebaseapp.com",
+  projectId: "lich-mood",
+  storageBucket: "lich-mood.firebasestorage.app",
+  messagingSenderId: "458962328580",
+  appId: "1:458962328580:web:4145849a6cf74ca2d6a951", 
   authDomain: "lich-mood.firebaseapp.com",
   projectId: "lich-mood",
   storageBucket: "lich-mood.firebasestorage.app",
