@@ -1,0 +1,7 @@
+{
+  "name": "LỊCH MOOD v01",
+  "description": "Ứng dụng Lịch Vạn Niên tích hợp xin xăm, soạn lời chúc AI, đổi ngày âm dương và sổ tay tu tập.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
