@@ -38,9 +38,7 @@ const App: React.FC = () => {
     <LanguageProvider>
       <EventProvider> {/* <--- 3. Bọc Kho sự kiện vào đây để nuôi cả App */}
         <Router>
-            {/* Nút đăng nhập nằm đè lên mọi thứ */}
-            <UserAuth /> 
-            
+                       
             <Routes>
                 <Route path="/" element={<Layout />}>
                     <Route index element={<HomePage />} />
