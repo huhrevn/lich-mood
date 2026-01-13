@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename);
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
   return {
-    base: '/', // QUAN TRỌNG: Dòng này giúp web chạy được trên GitHub Pages
+    base: '/',
     server: {
       port: 3000,
       host: '0.0.0.0',
