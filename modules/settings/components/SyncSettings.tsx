@@ -1,12 +1,12 @@
 
 import React from 'react';
-import { DesktopCard } from './SharedComponents';
+import { DesktopContent } from './SharedComponents';
 import { SyncConfig } from '../settings.logic';
 
 interface SyncSettingsProps {
     syncConfig: SyncConfig;
     setSyncConfig: React.Dispatch<React.SetStateAction<SyncConfig>>;
-    availableCalendars: Array<{id: string, summary: string, color: string}>;
+    availableCalendars: Array<{ id: string, summary: string, color: string }>;
     isSyncing: boolean;
     connectCalendar: () => void;
     disconnectCalendar: () => void;
@@ -20,7 +20,7 @@ const SyncSettings: React.FC<SyncSettingsProps> = ({
 }) => {
     return (
         <div className="animate-[fadeIn_0.3s_ease-out]">
-            <DesktopCard title="Đồng bộ Google Calendar">
+            <DesktopContent title="Đồng bộ Google Calendar">
                 {!syncConfig.isConnected ? (
                     <div className="flex flex-col items-center justify-center py-10 bg-gray-50 dark:bg-zinc-800 rounded-2xl border border-dashed border-gray-300 dark:border-zinc-700">
                         <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Google_Calendar_icon_%282020%29.svg" alt="GCal" className="size-16 mb-4" />
@@ -58,11 +58,11 @@ const SyncSettings: React.FC<SyncSettingsProps> = ({
                                     <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Quyền truy cập</label>
                                     <div className="flex gap-4">
                                         <label className="flex items-center gap-2 cursor-pointer">
-                                            <input type="radio" name="scope" checked={syncConfig.scopes === 'readonly'} onChange={() => setSyncConfig({...syncConfig, scopes: 'readonly'})} className="text-accent-green focus:ring-accent-green" />
+                                            <input type="radio" name="scope" checked={syncConfig.scopes === 'readonly'} onChange={() => setSyncConfig({ ...syncConfig, scopes: 'readonly' })} className="text-accent-green focus:ring-accent-green" />
                                             <span className="text-sm font-medium">Chỉ xem (Read-only)</span>
                                         </label>
                                         <label className="flex items-center gap-2 cursor-pointer">
-                                            <input type="radio" name="scope" checked={syncConfig.scopes === 'events'} onChange={() => setSyncConfig({...syncConfig, scopes: 'events'})} className="text-accent-green focus:ring-accent-green" />
+                                            <input type="radio" name="scope" checked={syncConfig.scopes === 'events'} onChange={() => setSyncConfig({ ...syncConfig, scopes: 'events' })} className="text-accent-green focus:ring-accent-green" />
                                             <span className="text-sm font-medium">Toàn quyền (Events)</span>
                                         </label>
                                     </div>
@@ -70,7 +70,7 @@ const SyncSettings: React.FC<SyncSettingsProps> = ({
 
                                 <div>
                                     <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Chiều đồng bộ</label>
-                                    <select value={syncConfig.direction} onChange={(e) => setSyncConfig({...syncConfig, direction: e.target.value as any})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-medium outline-none focus:border-accent-green">
+                                    <select value={syncConfig.direction} onChange={(e) => setSyncConfig({ ...syncConfig, direction: e.target.value as any })} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-medium outline-none focus:border-accent-green">
                                         <option value="import">Chỉ nhập (Google → App)</option>
                                         <option value="export">Chỉ xuất (App → Google)</option>
                                         <option value="bidirectional">Hai chiều (2-way Sync)</option>
@@ -79,7 +79,7 @@ const SyncSettings: React.FC<SyncSettingsProps> = ({
 
                                 <div>
                                     <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Xử lý xung đột</label>
-                                    <select value={syncConfig.conflictPolicy} onChange={(e) => setSyncConfig({...syncConfig, conflictPolicy: e.target.value as any})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-medium outline-none focus:border-accent-green">
+                                    <select value={syncConfig.conflictPolicy} onChange={(e) => setSyncConfig({ ...syncConfig, conflictPolicy: e.target.value as any })} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-medium outline-none focus:border-accent-green">
                                         <option value="app">Ưu tiên App</option>
                                         <option value="google">Ưu tiên Google</option>
                                         <option value="ask">Hỏi tôi</option>
@@ -90,7 +90,7 @@ const SyncSettings: React.FC<SyncSettingsProps> = ({
                             <div>
                                 <div className="flex items-center justify-between mb-3">
                                     <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">Lịch được chọn</label>
-                                    <button onClick={() => setSyncConfig({...syncConfig, selectedCalendars: availableCalendars.map(c => c.id)})} className="text-[10px] font-bold text-accent-green hover:underline">
+                                    <button onClick={() => setSyncConfig({ ...syncConfig, selectedCalendars: availableCalendars.map(c => c.id) })} className="text-[10px] font-bold text-accent-green hover:underline">
                                         Chọn tất cả
                                     </button>
                                 </div>
@@ -112,7 +112,7 @@ const SyncSettings: React.FC<SyncSettingsProps> = ({
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div className="pt-6 border-t border-gray-100 flex justify-end">
                             <button onClick={simulateSync} disabled={isSyncing} className="px-6 py-2.5 bg-accent-green hover:bg-primary-dark text-white font-bold rounded-xl shadow-glow transition-all flex items-center gap-2 disabled:opacity-70">
                                 {isSyncing ? (
@@ -125,7 +125,7 @@ const SyncSettings: React.FC<SyncSettingsProps> = ({
                         </div>
                     </div>
                 )}
-            </DesktopCard>
+            </DesktopContent>
         </div>
     );
 };

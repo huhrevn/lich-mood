@@ -26,7 +26,7 @@ export interface SyncConfig {
 export const useSettingsLogic = () => {
     const { t, language, setLanguage } = useLanguage();
     const [searchParams] = useSearchParams();
-    
+
     // --- SHARED STATE ---
     const [leapMonth, setLeapMonth] = useState(true);
     const [autoConvert, setAutoConvert] = useState(true);
@@ -39,7 +39,7 @@ export const useSettingsLogic = () => {
 
     // --- DESKTOP STATE ---
     const activeTab = searchParams.get('tab') || 'account';
-    
+
     // Profile State
     const [profile, setProfile] = useState<AppProfile>({
         isLoggedIn: false,
@@ -66,7 +66,7 @@ export const useSettingsLogic = () => {
         timezone: 'Asia/Ho_Chi_Minh',
         lastSyncAt: null
     });
-    const [availableCalendars, setAvailableCalendars] = useState<Array<{id: string, summary: string, color: string}>>([]);
+    const [availableCalendars, setAvailableCalendars] = useState<Array<{ id: string, summary: string, color: string }>>([]);
     const [isSyncing, setIsSyncing] = useState(false);
 
     // --- EFFECTS ---
@@ -80,11 +80,11 @@ export const useSettingsLogic = () => {
                     ...parsed,
                     displayName: parsed.displayName || parsed.name.split(' ')[0]
                 }));
-            } catch (e) {}
+            } catch (e) { }
         }
 
         if (localStorage.getItem('app_sync_config')) {
-             setSyncConfig(JSON.parse(localStorage.getItem('app_sync_config')!));
+            setSyncConfig(JSON.parse(localStorage.getItem('app_sync_config')!));
         }
     }, []);
 
@@ -98,9 +98,9 @@ export const useSettingsLogic = () => {
             setNotification({ type: 'error', message: 'Chỉ chấp nhận file ảnh JPG, PNG, GIF.' });
             return;
         }
-        if (file.size > 2 * 1024 * 1024) { 
-             setNotification({ type: 'error', message: 'Dung lượng ảnh tối đa 2MB.' });
-             return;
+        if (file.size > 2 * 1024 * 1024) {
+            setNotification({ type: 'error', message: 'Dung lượng ảnh tối đa 2MB.' });
+            return;
         }
 
         const reader = new FileReader();
@@ -115,7 +115,7 @@ export const useSettingsLogic = () => {
     const handleInputChange = (field: keyof AppProfile, value: string) => {
         setProfile(prev => ({ ...prev, [field]: value }));
         setIsDirty(true);
-        
+
         const newErrors = { ...errors };
         if (field === 'phone') {
             const phoneRegex = /^[0-9]{10,11}$/;
@@ -135,8 +135,8 @@ export const useSettingsLogic = () => {
 
     const saveProfile = () => {
         if (Object.keys(errors).length > 0) {
-             setNotification({ type: 'error', message: 'Vui lòng sửa các lỗi trước khi lưu.' });
-             return;
+            setNotification({ type: 'error', message: 'Vui lòng sửa các lỗi trước khi lưu.' });
+            return;
         }
 
         setIsLoading(true);
@@ -206,11 +206,20 @@ export const useSettingsLogic = () => {
         });
     };
 
+    const navigateToTab = (id: string) => {
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab', id);
+        window.history.pushState({}, '', url);
+        // Trigger re-render by creating a popstate event or just use the fact that useSearchParams will react
+        window.dispatchEvent(new PopStateEvent('popstate'));
+    };
+
     const handleSaveMobile = () => { saveProfile(); };
 
     return {
         t,
         activeTab,
+        navigateToTab,
         // Profile
         profile,
         isLoading,

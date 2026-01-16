@@ -24,8 +24,8 @@ const NAP_AM_MAP: Record<string, string> = {
 };
 
 const ZODIAC_HOURS_MAP: Record<number, number[]> = {
-    0: [0, 1, 3, 6, 8, 9], 1: [2, 3, 5, 8, 10, 11], 2: [0, 1, 4, 5, 7, 10], 3: [0, 2, 3, 6, 7, 9], 
-    4: [2, 4, 5, 8, 9, 11], 5: [1, 4, 6, 7, 10, 11], 6: [0, 1, 3, 6, 8, 9], 7: [2, 3, 5, 8, 10, 11], 
+    0: [0, 1, 3, 6, 8, 9], 1: [2, 3, 5, 8, 10, 11], 2: [0, 1, 4, 5, 7, 10], 3: [0, 2, 3, 6, 7, 9],
+    4: [2, 4, 5, 8, 9, 11], 5: [1, 4, 6, 7, 10, 11], 6: [0, 1, 3, 6, 8, 9], 7: [2, 3, 5, 8, 10, 11],
     8: [0, 1, 4, 5, 7, 10], 9: [0, 2, 3, 6, 7, 9], 10: [2, 4, 5, 8, 9, 11], 11: [1, 4, 6, 7, 10, 11],
 };
 
@@ -42,7 +42,7 @@ interface CalendarDayDetailProps {
 }
 
 const CalendarDayDetail: React.FC<CalendarDayDetailProps> = ({ date, onDateChange }) => {
-    
+
     const details = useMemo(() => {
         const l = lunisolar(date);
         const lunarDay = l.lunar.day;
@@ -54,7 +54,7 @@ const CalendarDayDetail: React.FC<CalendarDayDetailProps> = ({ date, onDateChang
         const yChi = CHI[((lunarYear - 4) % 12 + 12) % 12];
         const mCan = CAN[((((((lunarYear - 4) % 10 + 10) % 10) % 5) * 2 + 2 + (lunarMonth - 1)) % 10)];
         const mChi = CHI[(lunarMonth + 1) % 12];
-        
+
         const a = Math.floor((14 - (date.getMonth() + 1)) / 12);
         const y = date.getFullYear() + 4800 - a;
         const m = (date.getMonth() + 1) + 12 * a - 3;
@@ -67,7 +67,7 @@ const CalendarDayDetail: React.FC<CalendarDayDetailProps> = ({ date, onDateChang
         const napAm = NAP_AM_MAP[`${dayCan} ${dayChi}`] || "Đang cập nhật";
         const luckyHourIndices = ZODIAC_HOURS_MAP[dChiIdx];
         const conflictGroup = [CHI[(dChiIdx + 6) % 12], CHI[(dChiIdx + 3) % 12], CHI[(dChiIdx + 9) % 12]].join(', ');
-        
+
         const seed = date.getDate() + date.getMonth();
         const trucName = TWELVE_OFFICERS[seed % 12];
 
@@ -129,14 +129,14 @@ const CalendarDayDetail: React.FC<CalendarDayDetailProps> = ({ date, onDateChang
             </div>
 
             <div className="grid grid-cols-2 gap-2 md:gap-3">
-                <div className="bg-green-50/50 dark:bg-green-900/10 rounded-xl p-2 md:p-3 border border-green-100/50 dark:border-green-800/30">
+                <div className="bg-blue-50/50 dark:bg-blue-900/10 rounded-xl p-2 md:p-3 border border-blue-100/50 dark:border-blue-800/30">
                     <div className="flex items-center gap-1 mb-1.5 md:mb-2">
-                        <span className="material-symbols-outlined text-green-600 dark:text-green-400 text-[14px] md:text-[16px]">check_circle</span>
-                        <span className="text-[9px] md:text-[10px] font-bold text-green-700 dark:text-green-400 uppercase">Nên làm</span>
+                        <span className="material-symbols-outlined text-blue-600 dark:text-blue-400 text-[14px] md:text-[16px]">check_circle</span>
+                        <span className="text-[9px] md:text-[10px] font-bold text-blue-700 dark:text-blue-400 uppercase">Nên làm</span>
                     </div>
                     <div className="flex flex-wrap gap-1">
                         {ADVICE_GOOD.slice(0, 3).map((item, i) => (
-                            <span key={i} className="text-[9px] md:text-[10px] bg-white dark:bg-green-900/30 text-green-800 dark:text-green-200 px-1.5 py-0.5 rounded shadow-sm border border-green-100 dark:border-green-800/30">{item}</span>
+                            <span key={i} className="text-[9px] md:text-[10px] bg-white dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 px-1.5 py-0.5 rounded shadow-sm border border-blue-100 dark:border-blue-800/30">{item}</span>
                         ))}
                     </div>
                 </div>

@@ -2,16 +2,14 @@
 import React from 'react';
 
 export const Toggle: React.FC<{ checked: boolean; onChange: (v: boolean) => void }> = ({ checked, onChange }) => (
-    <button 
+    <button
         onClick={() => onChange(!checked)}
-        className={`w-11 h-6 rounded-full p-1 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-accent-green/20 ${
-            checked ? 'bg-accent-green' : 'bg-gray-200 dark:bg-zinc-700'
-        }`}
+        className={`w-11 h-6 rounded-full p-1 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-accent-green/20 ${checked ? 'bg-accent-green' : 'bg-gray-200 dark:bg-zinc-700'
+            }`}
     >
-        <div 
-            className={`bg-white w-4 h-4 rounded-full shadow-sm transform transition-transform duration-200 ease-in-out ${
-                checked ? 'translate-x-5' : 'translate-x-0'
-            }`} 
+        <div
+            className={`bg-white w-4 h-4 rounded-full shadow-sm transform transition-transform duration-200 ease-in-out ${checked ? 'translate-x-5' : 'translate-x-0'
+                }`}
         />
     </button>
 );
@@ -19,6 +17,15 @@ export const Toggle: React.FC<{ checked: boolean; onChange: (v: boolean) => void
 export const DesktopCard: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
     <div className="bg-white dark:bg-zinc-900 rounded-[24px] shadow-sm border border-gray-100 dark:border-zinc-800 p-8 mb-6 animate-[fadeIn_0.3s_ease-out]">
         <h2 className="text-xl font-bold text-text-main mb-6 border-b border-gray-100 dark:border-zinc-800 pb-4 flex items-center gap-2">
+            {title}
+        </h2>
+        {children}
+    </div>
+);
+
+export const DesktopContent: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
+    <div className="animate-[fadeIn_0.3s_ease-out] h-full">
+        <h2 className="text-2xl font-bold text-text-main mb-6 pb-4 border-b border-gray-100 dark:border-zinc-800 flex items-center gap-2">
             {title}
         </h2>
         {children}

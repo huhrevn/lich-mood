@@ -10,7 +10,7 @@ export const useHomePageLogic = () => {
     // --- STATE ---
     const [currentTime, setCurrentTime] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState(new Date());
-    
+
     const [user, setUser] = useState<UserProfile>({
         name: 'Khách',
         avatar: 'https://cdn-icons-png.flaticon.com/512/847/847969.png'
@@ -21,7 +21,7 @@ export const useHomePageLogic = () => {
     const [currentLocation, setCurrentLocation] = useState<LocationData>(DEFAULT_LOCATION);
     const [weather, setWeather] = useState<WeatherData>(DEFAULT_WEATHER);
     const [loadingWeather, setLoadingWeather] = useState(false);
-    
+
     // --- SEARCH STATE ---
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -47,53 +47,93 @@ export const useHomePageLogic = () => {
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
         setGreeting('Xin chào');
-        
+
         const loadUser = () => {
-            getUserProfile().then(p => { if (p) setUser(p); }).catch(() => {});
+            getUserProfile().then(p => { if (p) setUser(p); }).catch(() => { });
         };
         loadUser();
-        
+
         // Listen for profile updates
         window.addEventListener('user_profile_updated', loadUser);
 
-        return () => { 
+        return () => {
             clearInterval(timer);
             window.removeEventListener('user_profile_updated', loadUser);
         }
     }, []);
 
-    // 2. AUTO DETECT LOCATION (IP BASED - No Permission Popup)
+    // 2. AUTO DETECT LOCATION (GPS Preferred, fallback to IP)
     useEffect(() => {
         const detectLocation = async () => {
-             // Skip if we already have a location that isn't default (optional check)
-             // But for now, just run IP check on mount.
-             setLoadingWeather(true);
-             try {
-                const res = await fetch('https://ipwho.is/');
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.success) {
-                        setCurrentLocation({
-                            lat: data.latitude,
-                            lon: data.longitude,
-                            name: data.city || data.region,
-                            country: data.country
-                        });
-                    } else {
-                        throw new Error(data.message);
+            setLoadingWeather(true);
+
+            const fetchFromIP = async () => {
+                try {
+                    const res = await fetch('https://ipwho.is/');
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.success) {
+                            setCurrentLocation({
+                                lat: data.latitude,
+                                lon: data.longitude,
+                                name: data.city || data.region,
+                                country: data.country
+                            });
+                        }
                     }
-                } else {
-                     throw new Error("IP fetch failed");
+                } catch (e) {
+                    console.warn("IP Geolocation failed", e);
                 }
-             } catch (e) { 
-                 console.warn("IP Geolocation failed, using default", e);
-                 // Keep default location if fail
-             } finally {
-                 // Weather fetch depends on currentLocation change, 
-                 // but we need to ensure loading state is handled if weather doesn't trigger
-                 // Actually weather effect handles its own loading state when location changes.
-                 // So we just finish this detecting phase.
-             }
+            };
+
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    async (position) => {
+                        const { latitude, longitude } = position.coords;
+                        // Reverse Geocode using OpenStreetMap Nominatim
+                        try {
+                            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=14&addressdetails=1&accept-language=vi`);
+                            if (res.ok) {
+                                const data = await res.json();
+                                const address = data.address;
+                                // Prioritize most specific location name
+                                const name = address.village || address.town || address.suburb || address.city_district || address.city || address.county || "Vị trí của bạn";
+                                const region = address.state || address.region || "";
+
+                                setCurrentLocation({
+                                    lat: latitude,
+                                    lon: longitude,
+                                    name: name,
+                                    country: address.country || "Việt Nam" // Or combine region if needed
+                                });
+                            } else {
+                                // Fallback if reverse geocode fails but we have coords
+                                setCurrentLocation({
+                                    lat: latitude,
+                                    lon: longitude,
+                                    name: "Vị trí của bạn",
+                                    country: "Việt Nam"
+                                });
+                            }
+                        } catch (e) {
+                            // Network error on reverse geocoding, still use coords
+                            setCurrentLocation({
+                                lat: latitude,
+                                lon: longitude,
+                                name: "Đã định vị",
+                                country: "Việt Nam"
+                            });
+                        }
+                    },
+                    (error) => {
+                        console.warn("GPS denied/error, falling back to IP", error);
+                        fetchFromIP();
+                    },
+                    { timeout: 10000, maximumAge: 0, enableHighAccuracy: true }
+                );
+            } else {
+                fetchFromIP();
+            }
         };
 
         detectLocation();
@@ -106,26 +146,26 @@ export const useHomePageLogic = () => {
             if (!currentLocation) return;
             setLoadingWeather(true);
             try {
-                 const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${currentLocation.lat}&longitude=${currentLocation.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,visibility,surface_pressure&timezone=auto`);
-                 if(res.ok && isMounted) {
-                     const data = await res.json();
-                     setWeather({
-                         temp: Math.round(data.current.temperature_2m),
-                         feelsLike: Math.round(data.current.apparent_temperature),
-                         humidity: data.current.relative_humidity_2m,
-                         windSpeed: Math.round(data.current.wind_speed_10m),
-                         uvIndex: 5,
-                         visibility: data.current.visibility ? Math.round(data.current.visibility / 1000) : 10,
-                         pressure: Math.round(data.current.surface_pressure),
-                         weatherCode: data.current.weather_code,
-                         isDay: data.current.is_day,
-                         description: getWeatherDescription(data.current.weather_code)
-                     });
-                 }
-            } catch (e) { 
+                const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${currentLocation.lat}&longitude=${currentLocation.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,visibility,surface_pressure&timezone=auto`);
+                if (res.ok && isMounted) {
+                    const data = await res.json();
+                    setWeather({
+                        temp: Math.round(data.current.temperature_2m),
+                        feelsLike: Math.round(data.current.apparent_temperature),
+                        humidity: data.current.relative_humidity_2m,
+                        windSpeed: Math.round(data.current.wind_speed_10m),
+                        uvIndex: 5,
+                        visibility: data.current.visibility ? Math.round(data.current.visibility / 1000) : 10,
+                        pressure: Math.round(data.current.surface_pressure),
+                        weatherCode: data.current.weather_code,
+                        isDay: data.current.is_day,
+                        description: getWeatherDescription(data.current.weather_code)
+                    });
+                }
+            } catch (e) {
                 console.error("Weather fetch failed", e);
             }
-            if(isMounted) setLoadingWeather(false);
+            if (isMounted) setLoadingWeather(false);
         };
         fetchW();
         return () => { isMounted = false; };
@@ -134,7 +174,7 @@ export const useHomePageLogic = () => {
     // 4. SEARCH LOGIC
     useEffect(() => {
         if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
-        
+
         if (searchQuery.trim().length > 1) {
             setIsSearching(true);
             searchTimeoutRef.current = setTimeout(async () => {
@@ -159,10 +199,10 @@ export const useHomePageLogic = () => {
                     if (def.name.toLowerCase().includes(query)) {
                         const [d, m] = key.split('-').map(Number);
                         let scanDate = new Date(currentYear, 0, 1);
-                        for(let i=0; i<366; i++) {
-                             const l = lunisolar(scanDate);
-                             if(l.lunar.day === d && l.lunar.month === m) {
-                                 newResults.push({
+                        for (let i = 0; i < 366; i++) {
+                            const l = lunisolar(scanDate);
+                            if (l.lunar.day === d && l.lunar.month === m) {
+                                newResults.push({
                                     id: `lunar-${key}`,
                                     type: 'HOLIDAY',
                                     name: def.name,
@@ -170,8 +210,8 @@ export const useHomePageLogic = () => {
                                     date: new Date(scanDate)
                                 });
                                 break;
-                             }
-                             scanDate.setDate(scanDate.getDate() + 1);
+                            }
+                            scanDate.setDate(scanDate.getDate() + 1);
                         }
                     }
                 });
@@ -185,21 +225,21 @@ export const useHomePageLogic = () => {
 
                     if (d > 0 && d <= 31 && m > 0 && m <= 12) {
                         if (isLunar) {
-                             let scanDate = new Date(currentYear, 0, 1);
-                             for(let i=0; i<380; i++) {
-                                 const l = lunisolar(scanDate);
-                                 if(l.lunar.day === d && l.lunar.month === m) {
-                                     newResults.push({
+                            let scanDate = new Date(currentYear, 0, 1);
+                            for (let i = 0; i < 380; i++) {
+                                const l = lunisolar(scanDate);
+                                if (l.lunar.day === d && l.lunar.month === m) {
+                                    newResults.push({
                                         id: `date-lunar-${d}-${m}`,
                                         type: 'DATE',
                                         name: `Ngày ${d}/${m} Âm lịch`,
-                                        description: `Tương ứng ${scanDate.getDate()}/${scanDate.getMonth()+1} Dương lịch`,
+                                        description: `Tương ứng ${scanDate.getDate()}/${scanDate.getMonth() + 1} Dương lịch`,
                                         date: new Date(scanDate)
                                     });
                                     break;
-                                 }
-                                 scanDate.setDate(scanDate.getDate() + 1);
-                             }
+                                }
+                                scanDate.setDate(scanDate.getDate() + 1);
+                            }
                         } else {
                             const date = new Date(currentYear, m - 1, d);
                             newResults.push({
@@ -218,7 +258,7 @@ export const useHomePageLogic = () => {
                     if (res.ok) {
                         const data = await res.json();
                         if (data.results) {
-                             const locResults = data.results.map((item: any) => ({
+                            const locResults = data.results.map((item: any) => ({
                                 id: item.id,
                                 type: 'LOCATION',
                                 name: item.name,
@@ -227,8 +267,8 @@ export const useHomePageLogic = () => {
                                 latitude: item.latitude,
                                 longitude: item.longitude,
                                 feature_code: item.feature_code
-                             }));
-                             newResults = [...newResults, ...locResults];
+                            }));
+                            newResults = [...newResults, ...locResults];
                         }
                     }
                 } catch (e) { console.error(e); }

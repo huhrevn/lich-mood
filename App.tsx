@@ -12,48 +12,60 @@ import WorldClockScreen from './screens/WorldClockScreen';
 import PrayersScreen from './screens/PrayersScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import { LanguageProvider } from './contexts/LanguageContext';
-import { EventProvider } from './contexts/EventContext'; // <--- 1. Import Kho sự kiện
-import UserAuth from './UserAuth'; // <--- 2. Import nút đăng nhập (như bài trước)
+import { EventProvider } from './contexts/EventContext';
+import { AuthProvider } from './contexts/AuthContext'; // Import AuthProvider
+import { ThemeProvider } from './contexts/ThemeContext';
+import UserAuth from './UserAuth';
+import AddEventModal from './components/AddEventModal';
 
 const Layout: React.FC = () => {
-    return (
-        <div className="font-display bg-bg-base text-text-main min-h-screen flex overflow-hidden">
-            {/* Desktop Sidebar */}
-            <Sidebar className="hidden md:flex flex-shrink-0" />
-            
-            {/* Main Content Area */}
-            <div className="flex-1 flex flex-col min-w-0 w-full overflow-x-hidden relative">
-                <div className="flex-1 w-full mx-auto md:px-6 md:py-6 transition-all duration-300">
-                    <Outlet />
-                </div>
-                {/* Mobile Bottom Nav */}
-                <BottomNav />
-            </div>
+  return (
+    <div className="font-display bg-bg-base text-text-main min-h-screen flex overflow-hidden">
+      {/* Desktop Sidebar */}
+      <Sidebar className="hidden md:flex flex-shrink-0" />
+
+      {/* Global Event Creation Modal */}
+      <AddEventModal />
+
+      {/* UserAuth (Desktop Top-Right) - Removed as per user request (login moved to Settings) */}
+      {/* <UserAuth /> */}
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0 w-full overflow-x-hidden relative">
+        <div className="flex-1 w-full mx-auto md:px-6 md:py-6 transition-all duration-300">
+          <Outlet />
         </div>
-    );
+        {/* Mobile Bottom Nav */}
+        <BottomNav />
+      </div>
+    </div>
+  );
 };
 
 const App: React.FC = () => {
   return (
     <LanguageProvider>
-      <EventProvider> {/* <--- 3. Bọc Kho sự kiện vào đây để nuôi cả App */}
-        <Router>
-                       
-            <Routes>
+      <AuthProvider>
+        <ThemeProvider>
+          <EventProvider>
+            <Router>
+              <Routes>
                 <Route path="/" element={<Layout />}>
-                    <Route index element={<HomePage />} />
-                    <Route path="calendar" element={<CalendarPage />} />
-                    <Route path="fortune" element={<FortuneScreen />} />
-                    <Route path="greetings" element={<GreetingsScreen />} />
-                    <Route path="journal" element={<JournalScreen />} />
-                    <Route path="converter" element={<ConverterScreen />} />
-                    <Route path="world-clock" element={<WorldClockScreen />} />
-                    <Route path="prayers" element={<PrayersScreen />} />
-                    <Route path="settings" element={<SettingsScreen />} />
+                  <Route index element={<HomePage />} />
+                  <Route path="calendar" element={<CalendarPage />} />
+                  <Route path="fortune" element={<FortuneScreen />} />
+                  <Route path="greetings" element={<GreetingsScreen />} />
+                  <Route path="journal" element={<JournalScreen />} />
+                  <Route path="converter" element={<ConverterScreen />} />
+                  <Route path="world-clock" element={<WorldClockScreen />} />
+                  <Route path="prayers" element={<PrayersScreen />} />
+                  <Route path="settings" element={<SettingsScreen />} />
                 </Route>
-            </Routes>
-        </Router>
-      </EventProvider>
+              </Routes>
+            </Router>
+          </EventProvider>
+        </ThemeProvider>
+      </AuthProvider>
     </LanguageProvider>
   );
 };

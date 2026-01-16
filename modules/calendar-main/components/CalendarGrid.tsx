@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import lunisolar from 'lunisolar';
+import { getEventColor } from '../../../services/googleCalendarService';
 
 interface DayInfo {
     date: Date;
@@ -14,11 +15,14 @@ interface CalendarGridProps {
     date: Date;
     onDateChange: (newDate: Date) => void;
     onTogglePicker?: () => void;
-    events?: any[]; // <--- 1. THÊM PROP NHẬN SỰ KIỆN
+    events?: any[];
+    onDateDoubleClick?: (date: Date) => void;
+    onEventClick?: (event: any) => void;
+    onAddEventClick?: (date: Date) => void;
 }
 
-const CalendarGrid: React.FC<CalendarGridProps> = ({ date, onDateChange, onTogglePicker, events = [] }) => {
-    
+const CalendarGrid: React.FC<CalendarGridProps> = ({ date, onDateChange, onTogglePicker, events = [], onDateDoubleClick, onEventClick, onAddEventClick }) => {
+
     const { days, emptySlots } = useMemo(() => {
         const year = date.getFullYear();
         const month = date.getMonth();
@@ -27,7 +31,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ date, onDateChange, onToggl
         const daysInMonth = new Date(year, month + 1, 0).getDate();
         const firstDayOfMonth = new Date(year, month, 1);
         const jsDay = firstDayOfMonth.getDay();
-        const startDayOfWeek = (jsDay + 6) % 7; 
+        const startDayOfWeek = (jsDay + 6) % 7;
 
         const generatedDays: DayInfo[] = [];
         for (let i = 1; i <= daysInMonth; i++) {
@@ -39,7 +43,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ date, onDateChange, onToggl
                     const lunarData = lunisolar(currentDate);
                     lunarDay = lunarData.lunar.day;
                     lunarMonth = lunarData.lunar.month;
-                } catch (e) {}
+                } catch (e) { }
             }
 
             generatedDays.push({
@@ -48,8 +52,8 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ date, onDateChange, onToggl
                 lunarDay: lunarDay,
                 lunarMonth: lunarMonth,
                 isToday: currentDate.getDate() === today.getDate() &&
-                         currentDate.getMonth() === today.getMonth() &&
-                         currentDate.getFullYear() === today.getFullYear(),
+                    currentDate.getMonth() === today.getMonth() &&
+                    currentDate.getFullYear() === today.getFullYear(),
                 dayOfWeek: currentDate.getDay()
             });
         }
@@ -76,6 +80,9 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ date, onDateChange, onToggl
 
     const handleDateClick = (dayDate: Date) => {
         onDateChange(new Date(dayDate));
+        if (onAddEventClick) {
+            onAddEventClick(dayDate);
+        }
     };
 
     const monthString = `Tháng ${date.getMonth() + 1}, ${date.getFullYear()}`;
@@ -84,7 +91,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ date, onDateChange, onToggl
         <div className="calendar-main-grid w-full select-none h-auto flex flex-col font-display overflow-visible">
             {/* Header: Larger for Page */}
             <div className="flex items-center justify-between mb-2 md:mb-8 lg:mb-4 2xl:mb-8 pt-1 md:pt-2 px-1 md:px-2">
-                <div 
+                <div
                     className="flex items-center gap-1.5 md:gap-2 cursor-pointer group"
                     onClick={onTogglePicker}
                 >
@@ -94,10 +101,10 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ date, onDateChange, onToggl
                     </h2>
                     <span className="material-symbols-outlined text-gray-400 group-hover:text-accent-green transition-colors text-lg md:text-2xl">expand_more</span>
                 </div>
-                
+
                 <div className="flex items-center gap-2 md:gap-3">
-                    <button 
-                        onClick={handleToday} 
+                    <button
+                        onClick={handleToday}
                         className="px-2 py-1 md:px-4 md:py-2 text-[10px] md:text-xs font-bold text-gray-500 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg transition-all uppercase"
                     >
                         Hôm nay
@@ -113,13 +120,14 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ date, onDateChange, onToggl
                 </div>
             </div>
 
-            {/* Weekday Headers */}
-            <div className="grid grid-cols-7 mb-1 md:mb-4 lg:mb-2 2xl:mb-4 border-b border-gray-100 dark:border-zinc-800 pb-1 md:pb-4 lg:pb-2 2xl:pb-4">
-                {['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map((day) => (
-                    <div key={day} className={`text-center text-[9px] md:text-[10px] lg:text-xs font-bold uppercase tracking-widest
-                        ${day === 'CN' ? 'text-red-500' : 
-                          day === 'T7' ? 'text-orange-500' : 
-                          'text-gray-400 dark:text-gray-500'
+            {/* Weekday Headers - Added background and border */}
+            <div className="grid grid-cols-7 border-b border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800/50">
+                {['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map((day, index) => (
+                    <div key={day} className={`text-center py-2 text-[11px] md:text-xs font-bold uppercase tracking-wider
+                        ${index < 6 ? 'border-r border-gray-200 dark:border-zinc-700' : ''}
+                        ${day === 'CN' ? 'text-red-600' :
+                            day === 'T7' ? 'text-orange-600' :
+                                'text-gray-500 dark:text-gray-400'
                         }
                     `}>
                         {day}
@@ -127,87 +135,132 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ date, onDateChange, onToggl
                 ))}
             </div>
 
-            {/* CALENDAR GRID STYLES */}
-            <div className="grid grid-cols-7 gap-1 md:gap-3 lg:gap-3 2xl:gap-6 items-start content-start">
+            {/* CALENDAR GRID STYLES - Classic Grid Look */}
+            <div className="grid grid-cols-7 border-l border-gray-200 dark:border-zinc-700">
                 {emptySlots.map((_, index) => (
-                    <div key={`empty-${index}`} className="h-[54px] md:h-[90px] lg:h-auto lg:aspect-[1.45/1] 2xl:h-[70px] 2xl:aspect-auto" />
+                    <div key={`empty-${index}`} className="min-h-[120px] border-r border-b border-gray-200 dark:border-zinc-700 bg-gray-50/30" />
                 ))}
 
                 {days.map((dayInfo) => {
-                    const isSelected = dayInfo.date.getDate() === date.getDate() && 
-                                       dayInfo.date.getMonth() === date.getMonth();
-                    
+                    const isSelected = dayInfo.date.getDate() === date.getDate() &&
+                        dayInfo.date.getMonth() === date.getMonth();
+
                     const isSunday = dayInfo.dayOfWeek === 0;
                     const isSaturday = dayInfo.dayOfWeek === 6;
 
                     // --- 2. LỌC SỰ KIỆN CỦA NGÀY NÀY ---
                     const dayEvents = events?.filter(event => {
-                        const eventDate = new Date(event.start);
-                        return eventDate.getDate() === dayInfo.date.getDate() &&
-                               eventDate.getMonth() === dayInfo.date.getMonth() &&
-                               eventDate.getFullYear() === dayInfo.date.getFullYear();
+                        const startVal = event.start?.dateTime || event.start?.date || event.start;
+                        if (!startVal) return false;
+                        const eventDate = new Date(startVal);
+                        return !isNaN(eventDate.getTime()) && eventDate.toDateString() === dayInfo.date.toDateString();
                     });
                     const hasEvent = dayEvents && dayEvents.length > 0;
                     // ------------------------------------
 
                     return (
-                        <div 
-                            key={dayInfo.day} 
+                        <div
+                            key={dayInfo.day}
                             onClick={() => handleDateClick(dayInfo.date)}
-                            className={`relative h-[54px] md:h-[90px] lg:h-auto lg:aspect-[1.45/1] 2xl:h-[70px] 2xl:aspect-auto rounded-lg md:rounded-2xl lg:rounded-xl cursor-pointer transition-all duration-300 group overflow-hidden border border-transparent
-                                ${isSelected 
-                                    ? 'bg-[#4A7B4F] shadow-lg shadow-green-900/20 z-10 scale-[1.02]' 
-                                    : 'hover:bg-gray-50 dark:hover:bg-zinc-800/50 hover:border-gray-100'
+                            onDoubleClick={() => onDateDoubleClick && onDateDoubleClick(dayInfo.date)}
+                            className={`relative min-h-[120px] cursor-pointer transition-colors group overflow-hidden border-r border-b border-gray-200 dark:border-zinc-700
+                                ${isSelected
+                                    ? 'bg-blue-50 dark:bg-blue-900/20'
+                                    : 'bg-white dark:bg-zinc-900 hover:bg-gray-50 dark:hover:bg-zinc-800'
                                 }
                             `}
                         >
-                            {/* Today Dot */}
-                            {dayInfo.isToday && !isSelected && (
-                                <div className="absolute top-1 right-1 md:top-3 md:right-3 lg:top-2 lg:right-2 size-1 md:size-2 bg-amber-400 rounded-full"></div>
-                            )}
+                            {/* --- HEADER: Date Number --- */}
+                            <div className="flex justify-center md:justify-end items-center p-2">
+                                {dayInfo.isToday ? (
+                                    <div className="size-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold shadow-sm">
+                                        {dayInfo.day}
+                                    </div>
+                                ) : (
+                                    <span className={`text-base md:text-lg font-bold 
+                                        ${isSunday ? 'text-red-500' : isSaturday ? 'text-gray-600' : 'text-gray-900 dark:text-gray-100'}
+                                        ${dayInfo.lunarDay === 1 ? 'font-black' : ''}
+                                        ${dayInfo.lunarMonth !== date.getMonth() + 1 ? 'opacity-40' : ''} 
+                                    `}>
+                                        {dayInfo.day}
+                                    </span>
+                                )}
+                            </div>
 
-                            {/* Solar Day */}
-                            <span className={`absolute transition-all font-semibold md:font-bold leading-none
-                                ${isSelected 
-                                    ? 'top-1 right-1 md:top-3 md:right-4 lg:top-1.5 lg:right-2.5 2xl:top-1.5 2xl:right-2 text-sm md:text-3xl lg:text-xl 2xl:text-xl text-white' 
-                                    : 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-full text-base md:text-xl lg:text-xl 2xl:text-xl text-gray-700 dark:text-gray-200'
-                                }
-                                ${!isSelected && isSunday ? 'text-red-500' : ''}
-                                ${!isSelected && isSaturday ? 'text-orange-500' : ''}
-                            `}>
-                                {dayInfo.day}
-                            </span>
-
-                            {/* Lunar Day */}
-                            <span className={`absolute transition-all font-medium leading-none tabular-nums
-                                ${isSelected 
-                                    ? 'bottom-1 left-1 md:bottom-3 md:left-4 lg:bottom-1.5 lg:left-2.5 2xl:bottom-1.5 2xl:left-2 text-[8px] md:text-sm lg:text-[10px] 2xl:text-[10px] text-white/80' 
-                                    : 'top-1/2 left-1/2 -translate-x-1/2 translate-y-1.5 md:translate-y-1 lg:translate-y-1 text-[8px] md:text-[10px] lg:text-[11px] 2xl:text-[10px] text-gray-400 dark:text-gray-500'
-                                }
-                                ${!isSelected && (dayInfo.lunarDay === 1 || dayInfo.lunarDay === 15) ? 'text-primary font-bold' : ''}
+                            {/* --- BODY: Lunar Date (Desktop) --- */}
+                            <div className={`hidden md:block absolute top-2 left-2 text-[11px] font-medium
+                                ${dayInfo.lunarDay === 1 || dayInfo.lunarDay === 15 ? 'text-blue-600 font-bold' : 'text-gray-500 dark:text-gray-400'}
                             `}>
                                 {dayInfo.lunarDay === 1 ? `${dayInfo.lunarDay}/${dayInfo.lunarMonth}` : dayInfo.lunarDay}
-                            </span>
+                            </div>
 
-                            {/* --- 3. HIỂN THỊ DẤU CHẤM SỰ KIỆN --- */}
-                            {hasEvent && (
-                                <div className={`absolute bottom-1 md:bottom-2 left-1/2 -translate-x-1/2 flex gap-0.5`}>
-                                    {/* Vẽ tối đa 3 chấm nếu có nhiều sự kiện */}
-                                    {dayEvents.slice(0, 3).map((_, idx) => (
-                                        <div 
-                                            key={idx} 
-                                            className={`size-1 md:size-1.5 rounded-full 
-                                                ${isSelected ? 'bg-white' : 'bg-[#4A7B4F]'}
-                                            `}
-                                        ></div>
-                                    ))}
-                                    {dayEvents.length > 3 && (
-                                        <div className={`size-1 md:size-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-[#4A7B4F]'}`}></div>
-                                    )}
-                                </div>
-                            )}
-                            {/* -------------------------------------- */}
+                            {/* --- MOBILE: Lunar Date --- */}
+                            <div className="md:hidden absolute top-1 left-1 text-[8px] text-gray-400">
+                                {dayInfo.lunarDay}
+                            </div>
 
+                            {/* --- MOBILE: Dots (< md) --- */}
+                            <div className="md:hidden absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-0.5">
+                                {dayEvents?.slice(0, 3).map((evt: any, idx) => (
+                                    <div key={idx}
+                                        className="size-1 rounded-full"
+                                        style={{ backgroundColor: evt.backgroundColor || getEventColor(evt.colorId) }}
+                                    ></div>
+                                ))}
+                            </div>
+
+                            {/* --- DESKTOP: Event Bars (>= md) --- */}
+                            <div className="hidden md:flex flex-col gap-0.5 px-1 mt-0 w-full mb-1">
+                                {dayEvents?.slice(0, 4).map((evt: any, idx: number) => {
+                                    // Logic chọn màu: Ưu tiên màu background trực tiếp (mặc định của lịch), sau đó mới đến colorId
+                                    const bgColor = evt.backgroundColor || getEventColor(evt.colorId);
+
+                                    // STYLE 1: ALL DAY EVENT (Filled Bar)
+                                    if (evt.isAllDay) {
+                                        return (
+                                            <div
+                                                key={evt.id || idx}
+                                                onClick={(e) => { e.stopPropagation(); onEventClick && onEventClick(evt); }}
+                                                className="px-1.5 py-0.5 rounded-[3px] text-[11px] font-medium text-white truncate shadow-sm hover:opacity-90 transition-opacity leading-tight"
+                                                style={{ backgroundColor: bgColor }}
+                                                title={evt.summary}
+                                            >
+                                                {evt.summary}
+                                            </div>
+                                        );
+                                    }
+
+                                    // STYLE 2: TIMED EVENT (Dot + Text)
+                                    const startVal = evt.start?.dateTime || evt.start?.date || evt.start;
+                                    const eventTime = new Date(startVal).toLocaleTimeString('vi-VN', {
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                        hour12: false
+                                    });
+
+                                    return (
+                                        <div
+                                            key={evt.id || idx}
+                                            onClick={(e) => { e.stopPropagation(); onEventClick && onEventClick(evt); }}
+                                            className="flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] hover:brightness-95 transition-all cursor-pointer truncate mb-0.5 group/evt shadow-sm border border-transparent hover:border-black/5"
+                                            style={{ backgroundColor: `${bgColor}15` }} // Light background (15% opacity)
+                                            title={`${eventTime} ${evt.summary}`}
+                                        >
+                                            <div className="size-1.5 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: bgColor }}></div>
+                                            <div className="flex items-center gap-1 text-[10px] md:text-[11px] font-semibold text-text-main truncate">
+                                                <span className="text-gray-600 dark:text-gray-400 tabular-nums shrink-0">{eventTime}</span>
+                                                <span className="truncate group-hover/evt:underline decoration-offset-2">{evt.summary}</span>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                                {/* More indicator */}
+                                {dayEvents && dayEvents.length > 4 && (
+                                    <div className="text-[10px] text-gray-500 font-medium pl-2 hover:text-text-main cursor-pointer">
+                                        {dayEvents.length - 4} thêm...
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     );
                 })}

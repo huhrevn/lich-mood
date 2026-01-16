@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { UserProfile, SearchResult } from '../../types/homeTypes';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface HomeHeaderProps {
     user: UserProfile;
@@ -18,50 +19,29 @@ interface HomeHeaderProps {
     onClearSearch?: () => void;
 }
 
-const HomeHeader: React.FC<HomeHeaderProps> = ({ 
+const HomeHeader: React.FC<HomeHeaderProps> = ({
     user, greeting, currentTime,
-    searchQuery = '', searchResults = [], isSearching = false, 
+    searchQuery = '', searchResults = [], isSearching = false,
     onSearchQueryChange, onSelectLocation, onClearSearch
 }) => {
     const hours = currentTime.getHours().toString().padStart(2, '0');
     const minutes = currentTime.getMinutes().toString().padStart(2, '0');
     const { t } = useLanguage();
 
-    const [isDark, setIsDark] = useState(false);
-
-    useEffect(() => {
-        const isDarkStored = localStorage.getItem('theme') === 'dark' || 
-            (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
-        
-        setIsDark(isDarkStored);
-        if (isDarkStored) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
-    }, []);
-
-    const toggleDarkMode = () => {
-        const newStatus = !isDark;
-        setIsDark(newStatus);
-        
-        if (newStatus) {
-            document.documentElement.classList.add('dark');
-            localStorage.setItem('theme', 'dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-            localStorage.setItem('theme', 'light');
-        }
-    };
+    // START: Using ThemeContext instead of local logic
+    const { theme, toggleTheme } = useTheme();
+    const isDark = theme === 'dark';
+    const toggleDarkMode = toggleTheme;
+    // END: Using ThemeContext instead of local logic
 
     const displayGreeting = greeting === 'Xin chào' ? t('home.greeting') : greeting;
 
     return (
         <header className="sticky top-0 z-50 bg-bg-base/95 dark:bg-zinc-950/95 backdrop-blur-xl border-b border-transparent dark:border-zinc-800 transition-all px-4 md:px-6 py-3">
-            
+
             {/* MOBILE LAYOUT */}
             <div className="flex md:hidden items-center justify-between gap-4">
-                 {/* User Profile */}
+                {/* User Profile */}
                 <div className="flex items-center gap-3">
                     <div className="size-9 rounded-full overflow-hidden border border-gray-200 dark:border-zinc-700 shadow-sm">
                         <img src={user.avatar} className="w-full h-full object-cover" alt="User" />
@@ -72,12 +52,12 @@ const HomeHeader: React.FC<HomeHeaderProps> = ({
                     </div>
                 </div>
 
-                 {/* Clock & Theme Toggle (Mobile) */}
+                {/* Clock & Theme Toggle (Mobile) */}
                 <div className="flex items-center gap-3">
-                     <span className="text-lg font-bold text-accent-green tracking-tight tabular-nums">
+                    <span className="text-lg font-bold text-accent-green tracking-tight tabular-nums">
                         {hours}:{minutes}
                     </span>
-                    <button 
+                    <button
                         onClick={toggleDarkMode}
                         className="size-8 flex items-center justify-center bg-white dark:bg-zinc-900 rounded-full shadow-sm border border-gray-200 dark:border-zinc-800 text-gray-500 dark:text-zinc-400"
                     >
@@ -90,13 +70,13 @@ const HomeHeader: React.FC<HomeHeaderProps> = ({
 
             {/* DESKTOP LAYOUT */}
             <div className="hidden md:grid grid-cols-12 gap-6 items-center h-10">
-                
+
                 {/* Center: Search Bar */}
                 <div className="col-span-8 relative z-50">
                     <div className="relative group w-full max-w-2xl">
                         <span className="absolute left-3.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-gray-400 group-focus-within:text-accent-green transition-colors text-[20px]">search</span>
-                        <input 
-                            type="text" 
+                        <input
+                            type="text"
                             placeholder={t('common.search')}
                             className="w-full bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl py-2 pl-10 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-accent-green/20 focus:border-accent-green shadow-sm text-text-main placeholder-gray-400 transition-all h-10"
                             value={searchQuery}
@@ -105,7 +85,7 @@ const HomeHeader: React.FC<HomeHeaderProps> = ({
                         {isSearching ? (
                             <div className="absolute right-3 top-1/2 -translate-y-1/2 size-4 border-2 border-accent-green border-t-transparent rounded-full animate-spin"></div>
                         ) : searchQuery && (
-                            <button 
+                            <button
                                 onClick={onClearSearch}
                                 className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1"
                             >
@@ -118,18 +98,17 @@ const HomeHeader: React.FC<HomeHeaderProps> = ({
                     {searchResults.length > 0 && (
                         <div className="absolute top-full left-0 w-full max-w-2xl mt-2 bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-gray-100 dark:border-zinc-700 overflow-hidden z-50 max-h-[300px] overflow-y-auto animate-[fadeIn_0.2s_ease-out]">
                             {searchResults.map((result) => (
-                                <button 
+                                <button
                                     key={result.id}
                                     onClick={() => onSelectLocation && onSelectLocation(result)}
                                     className="w-full text-left px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-zinc-800 text-sm border-b border-gray-50 dark:border-zinc-800 last:border-0 flex items-center gap-3 transition-colors group"
                                 >
-                                    <div className={`size-8 rounded-full flex items-center justify-center shrink-0 ${
-                                        result.type === 'LOCATION' 
-                                            ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' 
+                                    <div className={`size-8 rounded-full flex items-center justify-center shrink-0 ${result.type === 'LOCATION'
+                                            ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
                                             : result.type === 'HOLIDAY'
                                                 ? 'bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400'
                                                 : 'bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400'
-                                    }`}>
+                                        }`}>
                                         <span className="material-symbols-outlined text-[16px]">
                                             {result.type === 'LOCATION' ? 'location_on' : result.type === 'HOLIDAY' ? 'celebration' : 'event'}
                                         </span>
@@ -144,8 +123,8 @@ const HomeHeader: React.FC<HomeHeaderProps> = ({
                                             )}
                                         </div>
                                         <span className="text-[11px] text-gray-500 dark:text-zinc-400 truncate">
-                                            {result.type === 'LOCATION' 
-                                                ? [result.admin1, result.country].filter(Boolean).join(', ') 
+                                            {result.type === 'LOCATION'
+                                                ? [result.admin1, result.country].filter(Boolean).join(', ')
                                                 : result.description
                                             }
                                         </span>
@@ -161,8 +140,8 @@ const HomeHeader: React.FC<HomeHeaderProps> = ({
                     <span className="text-2xl font-bold text-accent-green tracking-tight tabular-nums font-display">
                         {hours}:{minutes}
                     </span>
-                    
-                    <button 
+
+                    <button
                         onClick={toggleDarkMode}
                         className="size-10 flex items-center justify-center bg-white dark:bg-zinc-900 hover:bg-gray-50 dark:hover:bg-zinc-800 rounded-full transition-all shadow-sm border border-gray-200 dark:border-zinc-800 group"
                         title={isDark ? "Chuyển sang chế độ sáng" : "Chuyển sang chế độ tối"}

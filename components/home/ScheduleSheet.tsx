@@ -1,9 +1,31 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useEvents } from '../../contexts/EventContext'; // Import hook
+import { getEventColor } from '../../services/googleCalendarService';
 
 const ScheduleSheet: React.FC = () => {
     const { t } = useLanguage();
+    const { events } = useEvents(); // Lấy sự kiện từ context
+
+    // Lọc và lấy các sự kiện của NGÀY HÔM NAY
+    const todayEvents = useMemo(() => {
+        const now = new Date();
+        const todayStr = now.toDateString();
+
+        const filtered = events.filter(evt => {
+            const startVal = evt.start?.dateTime || evt.start?.date || evt.start;
+            if (!startVal) return false;
+            const evtDate = new Date(startVal);
+            return !isNaN(evtDate.getTime()) && evtDate.toDateString() === todayStr;
+        });
+
+        // Sắp xếp tăng dần theo thời gian
+        const getEventTime = (e: any) => new Date(e.start?.dateTime || e.start?.date || e.start).getTime();
+        filtered.sort((a, b) => getEventTime(a) - getEventTime(b));
+
+        return filtered;
+    }, [events]);
 
     return (
         <section className="
@@ -22,7 +44,11 @@ const ScheduleSheet: React.FC = () => {
             <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-bold text-text-main flex items-center gap-2">
                     {t('home.schedule')}
-                    <span className="flex items-center justify-center size-6 bg-accent-green text-white rounded-full text-[11px] font-bold shadow-sm">3</span>
+                    {todayEvents.length > 0 && (
+                        <span className="flex items-center justify-center size-6 bg-accent-green text-white rounded-full text-[11px] font-bold shadow-sm">
+                            {todayEvents.length}
+                        </span>
+                    )}
                 </h2>
                 <button className="text-accent-green text-xs font-bold uppercase hover:bg-accent-green/10 px-3 py-2 rounded-xl transition-colors flex items-center gap-1">
                     <span className="material-symbols-outlined text-[18px]">add</span>
@@ -32,57 +58,47 @@ const ScheduleSheet: React.FC = () => {
 
             {/* Timeline List */}
             <div className="flex flex-col gap-4">
-                {/* Event 1 */}
-                <div className="flex group">
-                    <div className="flex flex-col items-end pr-3.5 w-[3.5rem] pt-1.5">
-                        <span className="text-sm font-bold text-text-main">09:00</span>
-                        <span className="text-[10px] text-gray-400 dark:text-zinc-500 font-bold tracking-wide">AM</span>
-                    </div>
-                    <div className="flex-1 relative pl-4 py-3 border-l-[3px] border-blue-500 bg-white dark:bg-zinc-800 rounded-r-2xl shadow-soft flex flex-col gap-1 ring-1 ring-gray-100/80 dark:ring-zinc-700/50 hover:ring-blue-100 dark:hover:ring-blue-900 transition-all">
-                        <h4 className="text-sm font-bold text-text-main">Họp Daily Team</h4>
-                        <div className="flex items-center gap-1.5">
-                            <span className="material-symbols-outlined text-[14px] text-blue-500">videocam</span>
-                            <span className="text-xs text-gray-500 dark:text-zinc-400 font-medium">Google Meet</span>
-                        </div>
-                    </div>
-                </div>
+                {todayEvents.length > 0 ? (
+                    todayEvents.map((evt, index) => {
+                        const startVal = evt.start?.dateTime || evt.start?.date || evt.start;
+                        const evtDate = new Date(startVal);
+                        const isAm = evtDate.getHours() < 12;
+                        const timeStr = evtDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 
-                {/* Event 2 */}
-                <div className="flex group">
-                    <div className="flex flex-col items-end pr-3.5 w-[3.5rem] pt-1.5">
-                        <span className="text-sm font-bold text-text-main">14:30</span>
-                        <span className="text-[10px] text-gray-400 dark:text-zinc-500 font-bold tracking-wide">PM</span>
-                    </div>
-                    <div className="flex-1 relative pl-4 py-3 border-l-[3px] border-accent-green bg-white dark:bg-zinc-800 rounded-r-2xl shadow-soft flex flex-col gap-1 ring-1 ring-gray-100/80 dark:ring-zinc-700/50 hover:ring-green-100 dark:hover:ring-green-900 transition-all">
-                        <h4 className="text-sm font-bold text-text-main">Gửi báo cáo tháng</h4>
-                        <div className="flex items-center gap-1.5">
-                            <span className="material-symbols-outlined text-[14px] text-accent-green">check_box</span>
-                            <span className="text-xs text-gray-500 dark:text-zinc-400 font-medium">Tasks</span>
-                        </div>
-                    </div>
-                </div>
+                        const eventColor = getEventColor(evt.colorId);
+                        // Map màu Google sang icon phù hợp (vẫn giữ logic icon cũ cho sinh động)
+                        const icons = ['videocam', 'check_box', 'person', 'event', 'task', 'mail'];
+                        const icon = icons[index % icons.length];
 
-                {/* Tomorrow Separator */}
-                <div className="mt-2">
-                    <div className="text-[10px] font-bold text-gray-400 dark:text-zinc-600 uppercase tracking-widest ml-[3.5rem] pl-1 mb-3 flex items-center gap-2">
-                        Ngày mai <span className="h-px w-full bg-gray-200 dark:bg-zinc-800"></span>
-                    </div>
-                    
-                    {/* Event 3 */}
-                    <div className="flex group opacity-80 hover:opacity-100 transition-opacity">
-                        <div className="flex flex-col items-end pr-3.5 w-[3.5rem] pt-1.5">
-                            <span className="text-sm font-bold text-text-main">10:00</span>
-                            <span className="text-[10px] text-gray-400 dark:text-zinc-500 font-bold tracking-wide">AM</span>
-                        </div>
-                        <div className="flex-1 relative pl-4 py-3 border-l-[3px] border-orange-400 bg-white dark:bg-zinc-800 rounded-r-2xl shadow-soft flex flex-col gap-1 ring-1 ring-gray-100/80 dark:ring-zinc-700/50">
-                            <h4 className="text-sm font-bold text-text-main">Lấy đồ giặt ủi</h4>
-                            <div className="flex items-center gap-1.5">
-                                <span className="material-symbols-outlined text-[14px] text-orange-400">person</span>
-                                <span className="text-xs text-gray-500 dark:text-zinc-400 font-medium">Cá nhân</span>
+                        return (
+                            <div key={evt.id || index} className="flex group">
+                                <div className="flex flex-col items-end pr-3.5 w-[3.5rem] pt-1.5">
+                                    <span className="text-sm font-bold text-text-main">{timeStr}</span>
+                                    <span className="text-[10px] text-gray-400 dark:text-zinc-500 font-bold tracking-wide">{isAm ? 'AM' : 'PM'}</span>
+                                </div>
+                                <div
+                                    className={`flex-1 relative pl-4 py-3 border-l-[3px] bg-white dark:bg-zinc-800 rounded-r-2xl shadow-soft flex flex-col gap-1 ring-1 ring-gray-100/80 dark:ring-zinc-700/50 hover:ring-opacity-50 transition-all`}
+                                    style={{ borderLeftColor: eventColor }}
+                                >
+                                    <h4 className="text-sm font-bold text-text-main line-clamp-1">{evt.summary}</h4>
+                                    <div className="flex items-center gap-1.5">
+                                        <span className={`material-symbols-outlined text-[14px]`} style={{ color: eventColor }}>{icon}</span>
+                                        <span className="text-xs text-gray-500 dark:text-zinc-400 font-medium line-clamp-1">
+                                            {evt.description || 'Google Calendar'}
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
+                        );
+                    })
+                ) : (
+                    <div className="text-center py-6">
+                        <p className="text-sm text-gray-400 italic">Không có sự kiện sắp tới</p>
                     </div>
-                </div>
+                )}
+
+                {/* Tomorrow Separator (Nếu cần logic phức tạp hơn thì thêm sau, tạm thời ẩn nếu ko có data) */}
+                {/* ... */}
             </div>
         </section>
     );

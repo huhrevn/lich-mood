@@ -4,9 +4,9 @@ import { useFortuneLogic } from './fortune.logic';
 import BambooShaker from './components/BambooShaker';
 
 const FortuneScreen: React.FC = () => {
-    const { 
-        isShaking, result, history, 
-        handleShake, resetFortune, handlePin, handleDelete, handleClearAll, setResult 
+    const {
+        isShaking, result, history,
+        handleShake, resetFortune, handlePin, handleDelete, handleClearAll, setResult
     } = useFortuneLogic();
 
     return (
@@ -31,7 +31,7 @@ const FortuneScreen: React.FC = () => {
 
                     <div className="relative z-10 w-full flex flex-col items-center flex-1 min-h-[400px]">
                         <div className="mb-8 text-center animate-pulse">
-                            <button 
+                            <button
                                 onClick={handleShake}
                                 className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/70 backdrop-blur rounded-full border border-white/60 shadow-lg hover:shadow-xl transition-all active:scale-95 group"
                             >
@@ -51,46 +51,45 @@ const FortuneScreen: React.FC = () => {
                 <div className="col-span-12 lg:col-span-8 bg-white dark:bg-zinc-900 rounded-[32px] shadow-sm border border-gray-100 dark:border-zinc-800 flex flex-col items-center justify-center relative overflow-hidden p-10 min-h-[600px]">
                     {!result ? (
                         <div className="flex flex-col items-center z-10 animate-[fadeIn_0.3s_ease-out]">
-                             <div className="mb-6">
+                            <div className="mb-6">
                                 <BambooShaker isShaking={isShaking} />
-                             </div>
+                            </div>
 
                             <h1 className="text-3xl font-bold text-text-main mb-3 tracking-tight">Gieo Quẻ Quan Âm</h1>
                             <p className="text-text-secondary text-center max-w-md mb-8 text-base leading-relaxed">
-                                "Lòng thành thắp nén tâm hương.<br/>
+                                "Lòng thành thắp nén tâm hương.<br />
                                 Cầu xin Bồ Tát chỉ đường độ mê."
                             </p>
 
-                            <button 
+                            <button
                                 onClick={handleShake}
-                                disabled={isShaking}
-                                className="bg-[#4A7B4F] hover:bg-[#3A633F] text-white pl-6 pr-8 py-4 rounded-2xl font-bold text-lg shadow-glow hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center gap-3 group disabled:opacity-70 disabled:cursor-not-allowed"
+                                disabled={isShaking || result}
+                                className="bg-accent-green hover:bg-primary-dark text-white pl-6 pr-8 py-4 rounded-2xl font-bold text-lg shadow-glow hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center gap-3 group disabled:opacity-70 disabled:cursor-not-allowed"
                             >
                                 <span className={`material-symbols-outlined text-2xl group-hover:rotate-12 transition-transform ${isShaking ? 'animate-spin' : ''}`}>vibration</span>
                                 {isShaking ? 'Đang gieo quẻ...' : 'Lắc Ống Xâm'}
                             </button>
-                            
+
                             <p className="mt-4 text-xs font-medium text-gray-400 dark:text-zinc-500 italic">
                                 Nhấn nút để bắt đầu gieo quẻ
                             </p>
                         </div>
                     ) : (
                         <div className="flex flex-col items-center w-full max-w-xl animate-[slideUp_0.4s_ease-out] relative z-20">
-                             <div className="bg-white dark:bg-zinc-800 rounded-3xl p-8 shadow-card border border-stone-100 dark:border-zinc-700 relative overflow-hidden w-full text-center">
+                            <div className="bg-white dark:bg-zinc-800 rounded-3xl p-8 shadow-card border border-stone-100 dark:border-zinc-700 relative overflow-hidden w-full text-center">
                                 <div className="absolute top-0 right-0 p-4 opacity-5">
                                     <span className="material-symbols-outlined text-9xl text-primary rotate-12">spa</span>
                                 </div>
                                 <div className="mb-4 flex justify-center">
-                                    <span className={`inline-flex items-center gap-1.5 px-4 py-1.5 text-white rounded-full text-xs font-bold uppercase tracking-wider shadow-sm ${
-                                        result.type === 'cát' ? 'bg-accent-red' : result.type === 'hung' ? 'bg-gray-500' : 'bg-blue-500'
-                                    }`}>
+                                    <span className={`inline-flex items-center gap-1.5 px-4 py-1.5 text-white rounded-full text-xs font-bold uppercase tracking-wider shadow-sm ${result.type === 'cát' ? 'bg-accent-red' : result.type === 'hung' ? 'bg-gray-500' : 'bg-blue-500'
+                                        }`}>
                                         <span className="material-symbols-outlined text-sm">verified</span>
                                         {result.type === 'cát' ? 'Thượng Kiết' : result.type === 'hung' ? 'Hạ Hung' : 'Trung Bình'}
                                     </span>
                                 </div>
                                 <h2 className="text-4xl font-serif font-bold text-primary mb-2">{result.name}</h2>
                                 <div className="flex justify-center items-center gap-2 text-sm text-text-secondary font-medium mb-8">
-                                    <span>Gieo lúc: {new Date().toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'})}</span>
+                                    <span>Gieo lúc: {new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</span>
                                     <span className="size-1 bg-gray-300 rounded-full"></span>
                                     <span>{new Date().toLocaleDateString('vi-VN')}</span>
                                 </div>
@@ -146,8 +145,8 @@ const FortuneScreen: React.FC = () => {
                         ) : (
                             <div className="flex-1 overflow-y-auto pr-1 space-y-3 max-h-[400px]">
                                 {history.map((item) => (
-                                    <div 
-                                        key={item.uuid} 
+                                    <div
+                                        key={item.uuid}
                                         className="p-3 rounded-xl border flex gap-3 group transition-all cursor-pointer bg-gray-50 border-transparent hover:bg-white hover:border-gray-200"
                                         onClick={() => setResult(item)}
                                     >

@@ -72,7 +72,7 @@ const getSolarTerm = (date: Date, year: number) => {
     // Format DD/MM
     const currentDayMonth = date.getDate();
     const currentMonth = date.getMonth() + 1;
-     
+
     // Find term roughly
     // Logic: Simple linear check is hard because ranges wrap years.
     // Just returning a close match for display.
@@ -83,12 +83,12 @@ const getSolarTerm = (date: Date, year: number) => {
             foundTerm = term;
         } else if (currentMonth === m && currentDayMonth < d) {
             // It's the previous term, usually found in previous iteration or previous month
-             // Simple fallback: keep the one found in previous loop iteration
+            // Simple fallback: keep the one found in previous loop iteration
         } else if (currentMonth > m) {
-             foundTerm = term;
+            foundTerm = term;
         }
     }
-     
+
     return {
         name: foundTerm.name,
         range: `${foundTerm.start}/${year} — ${foundTerm.end}/${year}`
@@ -100,7 +100,7 @@ export type { LunarMonthData };
 
 export const useConverterLogic = () => {
     const [mode, setMode] = useState<ConversionMode>('SOLAR_TO_LUNAR');
-     
+
     // --- SOLAR INPUTS ---
     const [solarDay, setSolarDay] = useState<string>(new Date().getDate().toString());
     const [solarMonth, setSolarMonth] = useState<string>((new Date().getMonth() + 1).toString());
@@ -117,7 +117,7 @@ export const useConverterLogic = () => {
 
     const [result, setResult] = useState<ConversionResult | null>(null);
     const [error, setError] = useState<string | null>(null);
-     
+
     const isFirstRun = useRef(true);
 
     // 1. GENERATE LUNAR MONTHS (Data Model Construction)
@@ -133,20 +133,20 @@ export const useConverterLogic = () => {
 
         const currentMonthExists = yearData.months.some(m => m.value === selectedLunarMonthKey);
         if (!currentMonthExists && yearData.months.length > 0) {
-             const [oldM] = selectedLunarMonthKey.split('-');
-             const sameMonth = yearData.months.find(m => m.month === parseInt(oldM) && !m.isLeap);
-             if (sameMonth) {
-                 setSelectedLunarMonthKey(sameMonth.value);
-             } else {
-                 setSelectedLunarMonthKey(yearData.months[0].value);
-             }
+            const [oldM] = selectedLunarMonthKey.split('-');
+            const sameMonth = yearData.months.find(m => m.month === parseInt(oldM) && !m.isLeap);
+            if (sameMonth) {
+                setSelectedLunarMonthKey(sameMonth.value);
+            } else {
+                setSelectedLunarMonthKey(yearData.months[0].value);
+            }
         }
     }, [lunarYearStr]);
 
     // 2. UPDATE MAX DAYS CONSTRAINT
     useEffect(() => {
         const currentMonthData = lunarMonthOptions.find(m => m.value === selectedLunarMonthKey);
-         
+
         if (currentMonthData) {
             const max = currentMonthData.days;
             setMaxLunarDays(max);
@@ -163,9 +163,9 @@ export const useConverterLogic = () => {
         let yChiIdx = (lunarYear - 4) % 12; if (yChiIdx < 0) yChiIdx += 12;
         const canChiYear = `${CAN[yCanIdx]} ${CHI[yChiIdx]}`;
 
-        const baseMonthCan = ((yCanIdx % 5) * 2 + 2) % 10; 
+        const baseMonthCan = ((yCanIdx % 5) * 2 + 2) % 10;
         const mCanIdx = (baseMonthCan + (lunarMonth - 1)) % 10;
-        const mChiIdx = (lunarMonth + 1) % 12; 
+        const mChiIdx = (lunarMonth + 1) % 12;
         const canChiMonth = `${CAN[mCanIdx]} ${CHI[mChiIdx]}`;
 
         const jd = getJulianDay(date);
@@ -178,13 +178,13 @@ export const useConverterLogic = () => {
         const element = getNguHanhElement(napAm);
         const goodDays = ZODIAC_DAYS_MAP[lunarMonth] || [];
         const isZodiacDay = goodDays.includes(dChiIdx);
-         
+
         // 3. Relationships (Hop/Xung/etc) based on Day Chi (dChiIdx)
         const lucHop = CHI[RELATIONS.LUC_HOP[dChiIdx]];
         const xung = CHI[RELATIONS.TU_HANH_XUNG[dChiIdx]];
         const hai = CHI[RELATIONS.TUONG_HAI[dChiIdx]];
         const pha = CHI[RELATIONS.TUONG_PHA[dChiIdx]];
-         
+
         // Tam Hop is array of 2 others
         const tamHopIndices = RELATIONS.TAM_HOP.find(group => group.includes(dChiIdx)) || [];
         // const tamHop = tamHopIndices.length > 0 
@@ -192,15 +192,15 @@ export const useConverterLogic = () => {
         //       : []; // Fallback, though typically always found in groups if defined properly, logic adjustment needed:
         // Proper Tam Hop logic:
         const getTamHop = (idx: number) => {
-             // Than-Ty-Thin (8,0,4)
-             // Ty-Dau-Suu (5,9,1)
-             // Dan-Ngo-Tuat (2,6,10)
-             // Hoi-Mao-Mui (11,3,7)
-             if ([8,0,4].includes(idx)) return [8,0,4].filter(i => i!==idx).map(i=>CHI[i]);
-             if ([5,9,1].includes(idx)) return [5,9,1].filter(i => i!==idx).map(i=>CHI[i]);
-             if ([2,6,10].includes(idx)) return [2,6,10].filter(i => i!==idx).map(i=>CHI[i]);
-             if ([11,3,7].includes(idx)) return [11,3,7].filter(i => i!==idx).map(i=>CHI[i]);
-             return [];
+            // Than-Ty-Thin (8,0,4)
+            // Ty-Dau-Suu (5,9,1)
+            // Dan-Ngo-Tuat (2,6,10)
+            // Hoi-Mao-Mui (11,3,7)
+            if ([8, 0, 4].includes(idx)) return [8, 0, 4].filter(i => i !== idx).map(i => CHI[i]);
+            if ([5, 9, 1].includes(idx)) return [5, 9, 1].filter(i => i !== idx).map(i => CHI[i]);
+            if ([2, 6, 10].includes(idx)) return [2, 6, 10].filter(i => i !== idx).map(i => CHI[i]);
+            if ([11, 3, 7].includes(idx)) return [11, 3, 7].filter(i => i !== idx).map(i => CHI[i]);
+            return [];
         };
         const tamHopRes = getTamHop(dChiIdx);
 
@@ -214,7 +214,7 @@ export const useConverterLogic = () => {
         const conflictChi = (dChiIdx + 6) % 12;
         const conflictAges: string[] = [];
         // Iterate all 10 Cans for the Conflict Chi
-        for(let c=0; c<10; c++) {
+        for (let c = 0; c < 10; c++) {
             const cc = `${CAN[c]} ${CHI[conflictChi]}`;
             if (getNguHanhElement(NAP_AM_MAP[cc] || '') === conflictElement) {
                 conflictAges.push(cc);
@@ -229,10 +229,10 @@ export const useConverterLogic = () => {
         const lichAmDuong: LichAmDuong = {
             duong_lich: {
                 weekday_vi: daysOfWeek[date.getDay()],
-                date: `${date.getDate().toString().padStart(2,'0')}/${(date.getMonth()+1).toString().padStart(2,'0')}/${date.getFullYear()}`
+                date: `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`
             },
             am_lich: {
-                date: `${lunarYear}/${lunarMonth.toString().padStart(2,'0')}/${lunarYear}`, // Mock format, UI uses separate fields
+                date: `${lunarYear}/${lunarMonth.toString().padStart(2, '0')}/${lunarYear}`, // Mock format, UI uses separate fields
                 can_chi_day: canChiDay,
                 can_chi_month: canChiMonth,
                 can_chi_year: canChiYear,
@@ -268,7 +268,7 @@ export const useConverterLogic = () => {
 
         const conflictGroup = [xung, hai, pha].join(', '); // Legacy prop
 
-        return { 
+        return {
             canChiYear, canChiMonth, canChiDay, dayChiIdx: dChiIdx,
             napAm, isZodiacDay, conflictGroup,
             lichAmDuong, nguHanh
@@ -277,7 +277,7 @@ export const useConverterLogic = () => {
 
     const handleConvert = useCallback(() => {
         setError(null);
-         
+
         try {
             if (mode === 'SOLAR_TO_LUNAR') {
                 const sDay = parseInt(solarDay);
@@ -292,7 +292,7 @@ export const useConverterLogic = () => {
                     setError('Ngày không tồn tại');
                     return;
                 }
-                 
+
                 const l = lunisolar(date);
                 const isLeap = (l.lunar as any).isLeap;
                 const details = calculateDetailedResult(l.lunar.year, l.lunar.month, date, isLeap);
@@ -326,7 +326,7 @@ export const useConverterLogic = () => {
 
                 const dataYear = currentMonthData.solarStartDate.getFullYear();
                 if (Math.abs(dataYear - y) > 1) {
-                    return; 
+                    return;
                 }
 
                 const foundDate = new Date(currentMonthData.solarStartDate);
@@ -374,7 +374,7 @@ export const useConverterLogic = () => {
         setSelectedLunarDay(l.lunar.day);
         const isLeap = (l.lunar as any).isLeap;
         setSelectedLunarMonthKey(`${l.lunar.month}-${isLeap}`);
-         
+
         setError(null);
     }, []);
 
@@ -393,7 +393,7 @@ export const useConverterLogic = () => {
         state: {
             mode,
             solarDay, solarMonth, solarYear,
-            lunarYearStr, 
+            lunarYearStr,
             selectedLunarMonthKey,
             selectedLunarDay,
             lunarMonthOptions,
