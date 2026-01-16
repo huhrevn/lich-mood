@@ -9,7 +9,7 @@ export const useHomeLogic = () => {
     // --- STATE ---
     const [currentTime, setCurrentTime] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState(new Date());
-    
+
     const [user, setUser] = useState<UserProfile>({
         name: 'Khách',
         avatar: 'https://cdn-icons-png.flaticon.com/512/847/847969.png'
@@ -20,7 +20,7 @@ export const useHomeLogic = () => {
     const [currentLocation, setCurrentLocation] = useState<LocationData>(DEFAULT_LOCATION);
     const [weather, setWeather] = useState<WeatherData>(DEFAULT_WEATHER);
     const [loadingWeather, setLoadingWeather] = useState(false);
-    
+
     // --- SEARCH STATE ---
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -46,58 +46,25 @@ export const useHomeLogic = () => {
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
         setGreeting('Xin chào');
-        
+
         const loadUser = () => {
-            getUserProfile().then(p => { if (p) setUser(p); }).catch(() => {});
+            getUserProfile().then(p => { if (p) setUser(p); }).catch(() => { });
         };
         loadUser();
-        
+
         // Listen for profile updates
         window.addEventListener('user_profile_updated', loadUser);
 
-        return () => { 
+        return () => {
             clearInterval(timer);
             window.removeEventListener('user_profile_updated', loadUser);
         }
     }, []);
 
-    // 2. AUTO DETECT LOCATION
+    // 2. AUTO DETECT LOCATION (IP BASED)
     useEffect(() => {
         const detectLocation = async () => {
             setLoadingWeather(true);
-            try {
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(
-                        async (position) => {
-                            const { latitude, longitude } = position.coords;
-                            try {
-                                const geoRes = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=vi`);
-                                if (!geoRes.ok) throw new Error("Geo fetch failed");
-                                const geoData = await geoRes.json();
-                                const name = geoData.locality || geoData.city || geoData.principalSubdivision || "Vị trí của bạn";
-                                
-                                setCurrentLocation({
-                                    lat: latitude,
-                                    lon: longitude,
-                                    name: name,
-                                    country: geoData.countryName || "Việt Nam"
-                                });
-                            } catch (e) {
-                                setCurrentLocation({ ...DEFAULT_LOCATION, lat: latitude, lon: longitude });
-                            }
-                        },
-                        async () => { await fallbackToIpLocation(); },
-                        { timeout: 5000 }
-                    );
-                } else {
-                    await fallbackToIpLocation();
-                }
-            } catch (e) { 
-                await fallbackToIpLocation();
-            }
-        };
-
-        const fallbackToIpLocation = async () => {
             try {
                 const res = await fetch('https://ipwho.is/');
                 if (res.ok) {
@@ -111,7 +78,7 @@ export const useHomeLogic = () => {
                         });
                     }
                 }
-            } catch (e) { 
+            } catch (e) {
                 console.warn("IP Geolocation failed", e);
             }
         };
@@ -125,26 +92,26 @@ export const useHomeLogic = () => {
             if (!currentLocation) return;
             setLoadingWeather(true);
             try {
-                 const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${currentLocation.lat}&longitude=${currentLocation.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,visibility,surface_pressure&timezone=auto`);
-                 if(res.ok && isMounted) {
-                     const data = await res.json();
-                     setWeather({
-                         temp: Math.round(data.current.temperature_2m),
-                         feelsLike: Math.round(data.current.apparent_temperature),
-                         humidity: data.current.relative_humidity_2m,
-                         windSpeed: Math.round(data.current.wind_speed_10m),
-                         uvIndex: 5,
-                         visibility: data.current.visibility ? Math.round(data.current.visibility / 1000) : 10,
-                         pressure: Math.round(data.current.surface_pressure),
-                         weatherCode: data.current.weather_code,
-                         isDay: data.current.is_day,
-                         description: getWeatherDescription(data.current.weather_code)
-                     });
-                 }
-            } catch (e) { 
+                const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${currentLocation.lat}&longitude=${currentLocation.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,visibility,surface_pressure&timezone=auto`);
+                if (res.ok && isMounted) {
+                    const data = await res.json();
+                    setWeather({
+                        temp: Math.round(data.current.temperature_2m),
+                        feelsLike: Math.round(data.current.apparent_temperature),
+                        humidity: data.current.relative_humidity_2m,
+                        windSpeed: Math.round(data.current.wind_speed_10m),
+                        uvIndex: 5,
+                        visibility: data.current.visibility ? Math.round(data.current.visibility / 1000) : 10,
+                        pressure: Math.round(data.current.surface_pressure),
+                        weatherCode: data.current.weather_code,
+                        isDay: data.current.is_day,
+                        description: getWeatherDescription(data.current.weather_code)
+                    });
+                }
+            } catch (e) {
                 console.error("Weather fetch failed", e);
             }
-            if(isMounted) setLoadingWeather(false);
+            if (isMounted) setLoadingWeather(false);
         };
         fetchW();
         return () => { isMounted = false; };
@@ -153,7 +120,7 @@ export const useHomeLogic = () => {
     // 4. SEARCH LOGIC
     useEffect(() => {
         if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
-        
+
         if (searchQuery.trim().length > 1) {
             setIsSearching(true);
             searchTimeoutRef.current = setTimeout(async () => {
@@ -178,15 +145,15 @@ export const useHomeLogic = () => {
                     if (def.name.toLowerCase().includes(query)) {
                         const [d, m] = key.split('-').map(Number);
                         let scanDate = new Date(currentYear, 0, 1);
-                        for(let i=0; i<366; i++) {
-                             if (scanDate.getFullYear() < 1900 || scanDate.getFullYear() > 2100) {
-                                 scanDate.setDate(scanDate.getDate() + 1);
-                                 continue;
-                             }
-                             try {
-                                 const l = lunisolar(scanDate);
-                                 if(l.lunar.day === d && l.lunar.month === m) {
-                                     newResults.push({
+                        for (let i = 0; i < 366; i++) {
+                            if (scanDate.getFullYear() < 1900 || scanDate.getFullYear() > 2100) {
+                                scanDate.setDate(scanDate.getDate() + 1);
+                                continue;
+                            }
+                            try {
+                                const l = lunisolar(scanDate);
+                                if (l.lunar.day === d && l.lunar.month === m) {
+                                    newResults.push({
                                         id: `lunar-${key}`,
                                         type: 'HOLIDAY',
                                         name: def.name,
@@ -194,9 +161,9 @@ export const useHomeLogic = () => {
                                         date: new Date(scanDate)
                                     });
                                     break;
-                                 }
-                             } catch(e){}
-                             scanDate.setDate(scanDate.getDate() + 1);
+                                }
+                            } catch (e) { }
+                            scanDate.setDate(scanDate.getDate() + 1);
                         }
                     }
                 });
@@ -210,27 +177,27 @@ export const useHomeLogic = () => {
 
                     if (d > 0 && d <= 31 && m > 0 && m <= 12) {
                         if (isLunar) {
-                             let scanDate = new Date(currentYear, 0, 1);
-                             for(let i=0; i<380; i++) {
-                                 if (scanDate.getFullYear() < 1900 || scanDate.getFullYear() > 2100) {
-                                     scanDate.setDate(scanDate.getDate() + 1);
-                                     continue;
-                                 }
-                                 try {
-                                     const l = lunisolar(scanDate);
-                                     if(l.lunar.day === d && l.lunar.month === m) {
-                                         newResults.push({
+                            let scanDate = new Date(currentYear, 0, 1);
+                            for (let i = 0; i < 380; i++) {
+                                if (scanDate.getFullYear() < 1900 || scanDate.getFullYear() > 2100) {
+                                    scanDate.setDate(scanDate.getDate() + 1);
+                                    continue;
+                                }
+                                try {
+                                    const l = lunisolar(scanDate);
+                                    if (l.lunar.day === d && l.lunar.month === m) {
+                                        newResults.push({
                                             id: `date-lunar-${d}-${m}`,
                                             type: 'DATE',
                                             name: `Ngày ${d}/${m} Âm lịch`,
-                                            description: `Tương ứng ${scanDate.getDate()}/${scanDate.getMonth()+1} Dương lịch`,
+                                            description: `Tương ứng ${scanDate.getDate()}/${scanDate.getMonth() + 1} Dương lịch`,
                                             date: new Date(scanDate)
                                         });
                                         break;
-                                     }
-                                 } catch(e){}
-                                 scanDate.setDate(scanDate.getDate() + 1);
-                             }
+                                    }
+                                } catch (e) { }
+                                scanDate.setDate(scanDate.getDate() + 1);
+                            }
                         } else {
                             const date = new Date(currentYear, m - 1, d);
                             newResults.push({
@@ -249,7 +216,7 @@ export const useHomeLogic = () => {
                     if (res.ok) {
                         const data = await res.json();
                         if (data.results) {
-                             const locResults = data.results.map((item: any) => ({
+                            const locResults = data.results.map((item: any) => ({
                                 id: item.id,
                                 type: 'LOCATION',
                                 name: item.name,
@@ -258,8 +225,8 @@ export const useHomeLogic = () => {
                                 latitude: item.latitude,
                                 longitude: item.longitude,
                                 feature_code: item.feature_code
-                             }));
-                             newResults = [...newResults, ...locResults];
+                            }));
+                            newResults = [...newResults, ...locResults];
                         }
                     }
                 } catch (e) { console.error(e); }

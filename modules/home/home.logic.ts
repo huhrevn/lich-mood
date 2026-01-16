@@ -62,44 +62,13 @@ export const useHomePageLogic = () => {
         }
     }, []);
 
-    // 2. AUTO DETECT LOCATION
+    // 2. AUTO DETECT LOCATION (IP BASED - No Permission Popup)
     useEffect(() => {
         const detectLocation = async () => {
-            setLoadingWeather(true);
-            try {
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(
-                        async (position) => {
-                            const { latitude, longitude } = position.coords;
-                            try {
-                                const geoRes = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=vi`);
-                                if (!geoRes.ok) throw new Error("Geo fetch failed");
-                                const geoData = await geoRes.json();
-                                const name = geoData.locality || geoData.city || geoData.principalSubdivision || "Vị trí của bạn";
-                                
-                                setCurrentLocation({
-                                    lat: latitude,
-                                    lon: longitude,
-                                    name: name,
-                                    country: geoData.countryName || "Việt Nam"
-                                });
-                            } catch (e) {
-                                setCurrentLocation({ ...DEFAULT_LOCATION, lat: latitude, lon: longitude });
-                            }
-                        },
-                        async () => { await fallbackToIpLocation(); },
-                        { timeout: 5000 }
-                    );
-                } else {
-                    await fallbackToIpLocation();
-                }
-            } catch (e) { 
-                await fallbackToIpLocation();
-            }
-        };
-
-        const fallbackToIpLocation = async () => {
-            try {
+             // Skip if we already have a location that isn't default (optional check)
+             // But for now, just run IP check on mount.
+             setLoadingWeather(true);
+             try {
                 const res = await fetch('https://ipwho.is/');
                 if (res.ok) {
                     const data = await res.json();
@@ -110,12 +79,23 @@ export const useHomePageLogic = () => {
                             name: data.city || data.region,
                             country: data.country
                         });
+                    } else {
+                        throw new Error(data.message);
                     }
+                } else {
+                     throw new Error("IP fetch failed");
                 }
-            } catch (e) { 
-                console.warn("IP Geolocation failed", e);
-            }
+             } catch (e) { 
+                 console.warn("IP Geolocation failed, using default", e);
+                 // Keep default location if fail
+             } finally {
+                 // Weather fetch depends on currentLocation change, 
+                 // but we need to ensure loading state is handled if weather doesn't trigger
+                 // Actually weather effect handles its own loading state when location changes.
+                 // So we just finish this detecting phase.
+             }
         };
+
         detectLocation();
     }, []);
 
