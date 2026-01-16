@@ -1,125 +1,143 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch Mood</title>
-    <link rel="icon" href="/favicon.png" /> 
-    
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0..1,0" rel="stylesheet" />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        :root {
-            --color-primary: #4A7B4F;
-            --color-primary-dark: #3A633F;
-            --color-accent-green: #4A7B4F;
-            --color-accent-red: #D93025;
-            --color-accent-gold: #F59E0B;
-            --color-text-main: #1A1D1A;
-            --color-text-secondary: #5F6368;
-            --color-bg-base: #F7F8FA;
-            --color-bg-surface: #FFFFFF;
-            --color-paper: #FFFFFF;
-            --color-lotus-pink: #FFB7C5;
-            --color-lunar-gold: #F59E0B;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lịch Mood</title>
+  <link rel="icon" href="/favicon.png" />
 
-        .dark {
-            /* Zinc Palette for Professional Dark Mode */
-            --color-primary: #6cc070; /* Brighter green for dark mode contrast */
-            --color-primary-dark: #4A7B4F;
-            --color-accent-green: #6cc070;
-            --color-accent-red: #f87171; /* red-400 */
-            --color-accent-gold: #fbbf24; /* amber-400 */
-            
-            /* Text */
-            --color-text-main: #fafafa; /* zinc-50 */
-            --color-text-secondary: #a1a1aa; /* zinc-400 */
-            
-            /* Backgrounds */
-            --color-bg-base: #09090b; /* zinc-950 */
-            --color-bg-surface: #18181b; /* zinc-900 */
-            --color-paper: #27272a; /* zinc-800 */
-            
-            --color-lotus-pink: #F48FB1;
-            --color-lunar-gold: #fbbf24;
-        }
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap"
+    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0..1,0"
+    rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --color-primary: #0866ff;
+      --color-primary-dark: #0652cc;
+      --color-accent-green: #0866ff;
+      /* Re-mapped to Brand Blue */
+      --color-accent-red: #D93025;
+      --color-accent-gold: #F59E0B;
+      --color-text-main: #1A1D1A;
+      --color-text-secondary: #5F6368;
+      --color-bg-base: #F7F8FA;
+      --color-bg-surface: #FFFFFF;
+      --color-paper: #FFFFFF;
+      --color-lotus-pink: #FFB7C5;
+      --color-lunar-gold: #F59E0B;
+    }
 
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-        .filled-icon {
-            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-    </style>
-    <script>
-      tailwind.config = {
-        darkMode: 'class',
-        theme: {
-          extend: {
-            colors: {
-              primary: 'var(--color-primary)',
-              'primary-dark': 'var(--color-primary-dark)',
-              'accent-green': 'var(--color-accent-green)',
-              'accent-red': 'var(--color-accent-red)',
-              'accent-gold': 'var(--color-accent-gold)',
-              'text-main': 'var(--color-text-main)',
-              'text-secondary': 'var(--color-text-secondary)',
-              'bg-base': 'var(--color-bg-base)',
-              'bg-surface': 'var(--color-bg-surface)',
-              'paper': 'var(--color-paper)',
-              'lotus-pink': 'var(--color-lotus-pink)',
-              'lunar-gold': 'var(--color-lunar-gold)'
+    .dark {
+      /* Zinc Palette for Professional Dark Mode */
+      --color-primary: #4badff;
+      /* Lighter blue for dark mode contrast */
+      --color-primary-dark: #0866ff;
+      --color-accent-green: #4badff;
+      /* Re-mapped to Brand Blue */
+      --color-accent-red: #f87171;
+      /* red-400 */
+      --color-accent-gold: #fbbf24;
+      /* amber-400 */
+
+      /* Text */
+      --color-text-main: #fafafa;
+      /* zinc-50 */
+      --color-text-secondary: #a1a1aa;
+      /* zinc-400 */
+
+      /* Backgrounds */
+      --color-bg-base: #09090b;
+      /* zinc-950 */
+      --color-bg-surface: #18181b;
+      /* zinc-900 */
+      --color-paper: #27272a;
+      /* zinc-800 */
+
+      --color-lotus-pink: #F48FB1;
+      --color-lunar-gold: #fbbf24;
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    .filled-icon {
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+  </style>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: 'var(--color-primary)',
+            'primary-dark': 'var(--color-primary-dark)',
+            'accent-green': 'var(--color-accent-green)',
+            'accent-red': 'var(--color-accent-red)',
+            'accent-gold': 'var(--color-accent-gold)',
+            'text-main': 'var(--color-text-main)',
+            'text-secondary': 'var(--color-text-secondary)',
+            'bg-base': 'var(--color-bg-base)',
+            'bg-surface': 'var(--color-bg-surface)',
+            'paper': 'var(--color-paper)',
+            'lotus-pink': 'var(--color-lotus-pink)',
+            'lunar-gold': 'var(--color-lunar-gold)'
+          },
+          fontFamily: {
+            display: ['Inter', 'sans-serif'],
+            body: ['Inter', 'sans-serif'],
+            serif: ['Merriweather', 'serif'],
+          },
+          boxShadow: {
+            'card': '0 2px 8px rgba(0,0,0,0.06)',
+            'sheet': '0 -4px 20px rgba(0,0,0,0.05)',
+            'glow': '0 4px 14px rgba(74, 123, 79, 0.25)',
+            'soft': '0 2px 10px rgba(0,0,0,0.03)'
+          },
+          animation: {
+            'shake': 'shake 0.82s cubic-bezier(.36,.07,.19,.97) both',
+            'float': 'float 3s ease-in-out infinite',
+            'fadeIn': 'fadeIn 0.3s ease-out',
+            'slideUp': 'slideUp 0.4s ease-out'
+          },
+          keyframes: {
+            shake: {
+              '10%, 90%': { transform: 'translate3d(-1px, 0, 0)' },
+              '20%, 80%': { transform: 'translate3d(2px, 0, 0)' },
+              '30%, 50%, 70%': { transform: 'translate3d(-4px, 0, 0)' },
+              '40%, 60%': { transform: 'translate3d(4px, 0, 0)' }
             },
-            fontFamily: {
-              display: ['Inter', 'sans-serif'],
-              body: ['Inter', 'sans-serif'],
-              serif: ['Merriweather', 'serif'],
+            float: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-10px)' }
             },
-            boxShadow: {
-                'card': '0 2px 8px rgba(0,0,0,0.06)',
-                'sheet': '0 -4px 20px rgba(0,0,0,0.05)',
-                'glow': '0 4px 14px rgba(74, 123, 79, 0.25)',
-                'soft': '0 2px 10px rgba(0,0,0,0.03)'
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' }
             },
-            animation: {
-                'shake': 'shake 0.82s cubic-bezier(.36,.07,.19,.97) both',
-                'float': 'float 3s ease-in-out infinite',
-                'fadeIn': 'fadeIn 0.3s ease-out',
-                'slideUp': 'slideUp 0.4s ease-out'
-            },
-            keyframes: {
-                shake: {
-                    '10%, 90%': { transform: 'translate3d(-1px, 0, 0)' },
-                    '20%, 80%': { transform: 'translate3d(2px, 0, 0)' },
-                    '30%, 50%, 70%': { transform: 'translate3d(-4px, 0, 0)' },
-                    '40%, 60%': { transform: 'translate3d(4px, 0, 0)' }
-                },
-                float: {
-                    '0%, 100%': { transform: 'translateY(0)' },
-                    '50%': { transform: 'translateY(-10px)' }
-                },
-                fadeIn: {
-                    '0%': { opacity: '0' },
-                    '100%': { opacity: '1' }
-                },
-                slideUp: {
-                    '0%': { opacity: '0', transform: 'translateY(20px)' },
-                    '100%': { opacity: '1', transform: 'translateY(0)' }
-                }
+            slideUp: {
+              '0%': { opacity: '0', transform: 'translateY(20px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' }
             }
           }
         }
       }
-    </script>
+    }
+  </script>
 
-<link rel="stylesheet" href="/index.css">
-    <script type="importmap">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://apis.google.com/js/api.js" async defer></script>
+  <link rel="stylesheet" href="/index.css">
+  <script type="importmap">
 {
   "imports": {
     "react": "https://esm.sh/react@18.2.0",
@@ -133,9 +151,11 @@
   }
 }
 </script>
-  <script type="module" crossorigin src="/assets/index-CMPSZHDa.js"></script>
+  <script type="module" crossorigin src="/assets/index-ssGqIL7q.js"></script>
 </head>
+
 <body>
-    <div id="root"></div>
+  <div id="root"></div>
 </body>
+
 </html>
