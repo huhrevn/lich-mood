@@ -28,19 +28,6 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync
 
-      - name: Update CocoaPods
-        run: |
-          cd ios/App
-          pod install
-
-      - name: Disable Signing (CI Hack)
-        run: |
-          cd ios/App
-          sed -i '' 's/DevelopmentTeam = .*/DevelopmentTeam = "";/g' App.xcodeproj/project.pbxproj
-          sed -i '' 's/ProvisioningStyle = .*/ProvisioningStyle = Manual;/g' App.xcodeproj/project.pbxproj
-          sed -i '' 's/CODE_SIGN_IDENTITY = .*/CODE_SIGN_IDENTITY = "";/g' App.xcodeproj/project.pbxproj
-          sed -i '' 's/CODE_SIGN_STYLE = .*/CODE_SIGN_STYLE = Manual;/g' App.xcodeproj/project.pbxproj
-
       - name: Build iOS App (Verify Only)
         run: |
           cd ios
