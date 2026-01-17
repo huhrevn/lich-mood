@@ -109,22 +109,7 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({
                     </div>
                 </div>
 
-                {!profile.isLoggedIn && (
-                    <div className="bg-orange-50 border border-orange-100 rounded-2xl p-4 flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-3">
-                            <div className="size-10 bg-orange-100 rounded-full flex items-center justify-center text-orange-600">
-                                <span className="material-symbols-outlined">warning</span>
-                            </div>
-                            <div>
-                                <h4 className="text-sm font-bold text-orange-800">Tài khoản chưa kết nối</h4>
-                                <p className="text-xs text-orange-600">Đăng nhập để đồng bộ dữ liệu và sử dụng tính năng nâng cao.</p>
-                            </div>
-                        </div>
-                        <button onClick={startGoogleLogin} className="px-4 py-2 bg-white border border-orange-200 text-orange-700 text-sm font-bold rounded-lg shadow-sm hover:bg-orange-50 transition-colors">
-                            Kết nối ngay
-                        </button>
-                    </div>
-                )}
+
             </DesktopContent>
 
             <div className="flex justify-end gap-3 mt-4">

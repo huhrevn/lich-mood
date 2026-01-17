@@ -87,37 +87,110 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ date, onDateChange, onToggl
 
     const monthString = `Tháng ${date.getMonth() + 1}, ${date.getFullYear()}`;
 
-    return (
-        <div className="calendar-main-grid w-full select-none h-auto flex flex-col font-display overflow-visible">
-            {/* Header: Larger for Page */}
-            <div className="flex items-center justify-between mb-2 md:mb-8 lg:mb-4 2xl:mb-8 pt-1 md:pt-2 px-1 md:px-2">
-                <div
-                    className="flex items-center gap-1.5 md:gap-2 cursor-pointer group"
-                    onClick={onTogglePicker}
-                >
-                    <span className="material-symbols-outlined text-lg md:text-2xl text-accent-green">calendar_month</span>
-                    <h2 className="text-lg md:text-3xl lg:text-2xl 2xl:text-3xl font-bold text-text-main tracking-tight group-hover:text-accent-green transition-colors">
-                        {monthString}
-                    </h2>
-                    <span className="material-symbols-outlined text-gray-400 group-hover:text-accent-green transition-colors text-lg md:text-2xl">expand_more</span>
-                </div>
+    // --- NAVIGATION LOGIC: SCROLL & SWIPE ---
+    const touchStartX = React.useRef<number | null>(null);
+    const touchEndX = React.useRef<number | null>(null);
+    const lastScrollTime = React.useRef<number>(0);
 
-                <div className="flex items-center gap-2 md:gap-3">
+    const onWheel = (e: React.WheelEvent) => {
+        // Prevent default page scroll if needed, but here we just handle logic
+        // Debounce scroll to prevent rapid month switching
+        const now = Date.now();
+        if (now - lastScrollTime.current < 300) return;
+
+        lastScrollTime.current = now;
+
+        // User Logic: "cuộn lên thì tháng lên" (Scroll Up/Negative -> Month Up/Next)
+        // "cuộn xuống thì tháng xuống" (Scroll Down/Positive -> Month Down/Prev)
+        if (e.deltaY < 0) {
+            handleNextMonth();
+        } else if (e.deltaY > 0) {
+            handlePrevMonth();
+        }
+    };
+
+    const onTouchStart = (e: React.TouchEvent) => {
+        touchStartX.current = e.targetTouches[0].clientX;
+    };
+
+    const onTouchMove = (e: React.TouchEvent) => {
+        touchEndX.current = e.targetTouches[0].clientX;
+    };
+
+    const onTouchEnd = () => {
+        if (!touchStartX.current || !touchEndX.current) return;
+
+        const diffX = touchStartX.current - touchEndX.current;
+        const threshold = 50; // Minimum swipe distance
+
+        if (Math.abs(diffX) > threshold) {
+            // User Logic: 
+            // "vuốt quá trái thì tháng giảm" (Swipe Left / Drag Left -> Decrease / Prev)
+            // dragging left means startX > endX -> diffX > 0
+
+            // "vuốt qua phải tháng tăng" (Swipe Right / Drag Right -> Increase / Next)
+            // dragging right means startX < endX -> diffX < 0
+
+            if (diffX > 0) {
+                // Swipe Left
+                handlePrevMonth();
+            } else {
+                // Swipe Right
+                handleNextMonth();
+            }
+        }
+
+        touchStartX.current = null;
+        touchEndX.current = null;
+    };
+
+    return (
+        <div
+            className="calendar-main-grid w-full select-none h-full flex flex-col font-display overflow-visible flex-1"
+            onWheel={onWheel}
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
+        >
+            {/* Header: Larger for Page */}
+            {/* Header: Centered Layout with Side Nav */}
+            <div className="relative flex items-center justify-center mb-2 md:mb-6 pt-2 px-4 md:px-8 min-h-[40px] md:min-h-[48px]">
+                {/* PREV BTN (Left) */}
+                <button
+                    onClick={handlePrevMonth}
+                    className="absolute left-4 md:left-8 size-8 md:size-10 flex items-center justify-center rounded-full bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-700 text-gray-500 dark:text-gray-400 transition-all shadow-sm z-10"
+                >
+                    <span className="material-symbols-outlined text-[20px] md:text-[24px]">chevron_left</span>
+                </button>
+
+                {/* CENTER GROUP */}
+                <div className="flex items-center gap-3 md:gap-4 z-0">
+                    <div
+                        className="flex items-center gap-1.5 md:gap-2 cursor-pointer group select-none"
+                        onClick={onTogglePicker}
+                    >
+                        <span className="material-symbols-outlined text-base md:text-2xl text-accent-green">calendar_month</span>
+                        <h2 className="text-base md:text-3xl lg:text-2xl 2xl:text-3xl font-bold text-text-main tracking-tight group-hover:text-accent-green transition-colors">
+                            {monthString}
+                        </h2>
+                        <span className="material-symbols-outlined text-gray-400 group-hover:text-accent-green transition-colors text-base md:text-2xl">expand_more</span>
+                    </div>
+
                     <button
                         onClick={handleToday}
-                        className="px-2 py-1 md:px-4 md:py-2 text-[10px] md:text-xs font-bold text-gray-500 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg transition-all uppercase"
+                        className="px-3 py-1 md:px-4 md:py-1.5 text-[10px] md:text-xs font-bold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 rounded-full transition-all uppercase tracking-wide"
                     >
                         Hôm nay
                     </button>
-                    <div className="flex items-center gap-1 bg-gray-50 dark:bg-zinc-800 rounded-lg p-0.5 md:p-1 border border-gray-200 dark:border-zinc-700">
-                        <button onClick={handlePrevMonth} className="size-7 md:size-8 flex items-center justify-center rounded-md hover:bg-white text-gray-500 transition-all shadow-sm">
-                            <span className="material-symbols-outlined text-[18px] md:text-[20px]">chevron_left</span>
-                        </button>
-                        <button onClick={handleNextMonth} className="size-7 md:size-8 flex items-center justify-center rounded-md hover:bg-white text-gray-500 transition-all shadow-sm">
-                            <span className="material-symbols-outlined text-[18px] md:text-[20px]">chevron_right</span>
-                        </button>
-                    </div>
                 </div>
+
+                {/* NEXT BTN (Right) */}
+                <button
+                    onClick={handleNextMonth}
+                    className="absolute right-4 md:right-8 size-8 md:size-10 flex items-center justify-center rounded-full bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-700 text-gray-500 dark:text-gray-400 transition-all shadow-sm z-10"
+                >
+                    <span className="material-symbols-outlined text-[20px] md:text-[24px]">chevron_right</span>
+                </button>
             </div>
 
             {/* Weekday Headers - Added background and border */}
@@ -138,7 +211,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ date, onDateChange, onToggl
             {/* CALENDAR GRID STYLES - Classic Grid Look */}
             <div className="grid grid-cols-7 border-l border-gray-200 dark:border-zinc-700">
                 {emptySlots.map((_, index) => (
-                    <div key={`empty-${index}`} className="min-h-[120px] border-r border-b border-gray-200 dark:border-zinc-700 bg-gray-50/30" />
+                    <div key={`empty-${index}`} className="min-h-[65px] md:min-h-[120px] border-r border-b border-gray-200 dark:border-zinc-700 bg-gray-50/30" />
                 ))}
 
                 {days.map((dayInfo) => {
@@ -163,40 +236,35 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ date, onDateChange, onToggl
                             key={dayInfo.day}
                             onClick={() => handleDateClick(dayInfo.date)}
                             onDoubleClick={() => onDateDoubleClick && onDateDoubleClick(dayInfo.date)}
-                            className={`relative min-h-[120px] cursor-pointer transition-colors group overflow-hidden border-r border-b border-gray-200 dark:border-zinc-700
+                            className={`relative min-h-[65px] md:min-h-[120px] cursor-pointer transition-colors group overflow-hidden border-r border-b border-gray-200 dark:border-zinc-700
                                 ${isSelected
                                     ? 'bg-blue-50 dark:bg-blue-900/20'
                                     : 'bg-white dark:bg-zinc-900 hover:bg-gray-50 dark:hover:bg-zinc-800'
                                 }
                             `}
                         >
-                            {/* --- HEADER: Date Number --- */}
-                            <div className="flex justify-center md:justify-end items-center p-2">
+                            {/* --- HEADER: Date Numbers (Solar on top, Lunar below) --- */}
+                            {/* --- HEADER: Date Numbers (Solar centered, Lunar below) --- */}
+                            <div className="flex flex-col items-center justify-center pt-2 md:pt-3">
+                                {/* Solar Date */}
                                 {dayInfo.isToday ? (
-                                    <div className="size-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold shadow-sm">
+                                    <div className="size-6 md:size-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-[11px] md:text-base font-bold shadow-md mb-0.5 scale-110">
                                         {dayInfo.day}
                                     </div>
                                 ) : (
-                                    <span className={`text-base md:text-lg font-bold 
-                                        ${isSunday ? 'text-red-500' : isSaturday ? 'text-gray-600' : 'text-gray-900 dark:text-gray-100'}
-                                        ${dayInfo.lunarDay === 1 ? 'font-black' : ''}
-                                        ${dayInfo.lunarMonth !== date.getMonth() + 1 ? 'opacity-40' : ''} 
+                                    <span className={`text-[12px] md:text-[19px] font-extrabold leading-tight mb-0.5
+                                        ${isSunday ? 'text-red-600' : isSaturday ? 'text-orange-600' : 'text-gray-900 dark:text-gray-100'}
                                     `}>
                                         {dayInfo.day}
                                     </span>
                                 )}
-                            </div>
 
-                            {/* --- BODY: Lunar Date (Desktop) --- */}
-                            <div className={`hidden md:block absolute top-2 left-2 text-[11px] font-medium
-                                ${dayInfo.lunarDay === 1 || dayInfo.lunarDay === 15 ? 'text-blue-600 font-bold' : 'text-gray-500 dark:text-gray-400'}
-                            `}>
-                                {dayInfo.lunarDay === 1 ? `${dayInfo.lunarDay}/${dayInfo.lunarMonth}` : dayInfo.lunarDay}
-                            </div>
-
-                            {/* --- MOBILE: Lunar Date --- */}
-                            <div className="md:hidden absolute top-1 left-1 text-[8px] text-gray-400">
-                                {dayInfo.lunarDay}
+                                {/* Lunar Date (Directly below Solar) */}
+                                <div className={`text-[8px] md:text-[10px] font-medium leading-tight translate-x-2 md:translate-x-4
+                                    ${dayInfo.lunarDay === 1 || dayInfo.lunarDay === 15 ? 'text-blue-600 font-bold' : 'text-gray-400 dark:text-gray-500'}
+                                `}>
+                                    {dayInfo.lunarDay === 1 ? `${dayInfo.lunarDay}/${dayInfo.lunarMonth}` : dayInfo.lunarDay}
+                                </div>
                             </div>
 
                             {/* --- MOBILE: Dots (< md) --- */}
@@ -210,7 +278,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ date, onDateChange, onToggl
                             </div>
 
                             {/* --- DESKTOP: Event Bars (>= md) --- */}
-                            <div className="hidden md:flex flex-col gap-0.5 px-1 mt-0 w-full mb-1">
+                            <div className="hidden md:flex flex-col gap-1 px-1 mt-1 w-full mb-1 flex-1">
                                 {dayEvents?.slice(0, 4).map((evt: any, idx: number) => {
                                     // Logic chọn màu: Ưu tiên màu background trực tiếp (mặc định của lịch), sau đó mới đến colorId
                                     const bgColor = evt.backgroundColor || getEventColor(evt.colorId);

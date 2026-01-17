@@ -17,6 +17,7 @@ import { AuthProvider } from './contexts/AuthContext'; // Import AuthProvider
 import { ThemeProvider } from './contexts/ThemeContext';
 import UserAuth from './UserAuth';
 import AddEventModal from './components/AddEventModal';
+import FeatureUnderDevelopment from './components/FeatureUnderDevelopment';
 
 const Layout: React.FC = () => {
   return (
@@ -31,7 +32,7 @@ const Layout: React.FC = () => {
       {/* <UserAuth /> */}
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 w-full overflow-x-hidden relative">
+      <div className="flex-1 flex flex-col min-w-0 w-full overflow-x-hidden relative md:ml-64">
         <div className="flex-1 w-full mx-auto md:px-6 md:py-6 transition-all duration-300">
           <Outlet />
         </div>
@@ -55,10 +56,18 @@ const App: React.FC = () => {
                   <Route path="calendar" element={<CalendarPage />} />
                   <Route path="fortune" element={<FortuneScreen />} />
                   <Route path="greetings" element={<GreetingsScreen />} />
-                  <Route path="journal" element={<JournalScreen />} />
+                  {/* <Route path="journal" element={<JournalScreen />} />  -- Removed as per user request */}
                   <Route path="converter" element={<ConverterScreen />} />
                   <Route path="world-clock" element={<WorldClockScreen />} />
                   <Route path="prayers" element={<PrayersScreen />} />
+
+                  {/* New Feature Placeholders */}
+                  <Route path="good-days" element={<FeatureUnderDevelopment title="Xem Ngày Tốt" />} />
+                  <Route path="horoscope" element={<FeatureUnderDevelopment title="Tử Vi" />} />
+                  <Route path="feng-shui" element={<FeatureUnderDevelopment title="Phong Thủy" />} />
+                  <Route path="numerology" element={<FeatureUnderDevelopment title="Thần Số Học" />} />
+                  <Route path="utilities" element={<FeatureUnderDevelopment title="Tiện Ích Hay" />} />
+
                   <Route path="settings" element={<SettingsScreen />} />
                 </Route>
               </Routes>

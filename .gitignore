@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Capacitor
+ios/App/App/public
+# Keep the ios folder structure but ignore the web assets copied there

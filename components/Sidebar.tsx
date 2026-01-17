@@ -80,7 +80,7 @@ const Sidebar: React.FC<{ className?: string }> = ({ className = '' }) => {
     };
 
     return (
-        <aside className={`w-64 h-screen sticky top-0 bg-white dark:bg-zinc-900 border-r border-gray-100 dark:border-zinc-800 flex flex-col py-6 px-4 shadow-sm z-50 ${className}`}>
+        <aside className={`w-64 h-screen fixed top-0 left-0 bg-white dark:bg-zinc-900 border-r border-gray-100 dark:border-zinc-800 flex flex-col py-6 px-4 shadow-sm z-50 ${className}`}>
             {/* Logo Area */}
             <div className="flex items-center gap-3 px-2 mb-8 cursor-pointer group" onClick={() => navigate('/')}>
                 <div className="size-9 bg-accent-green rounded-xl flex items-center justify-center shadow-glow group-hover:rotate-6 transition-transform">
@@ -92,26 +92,21 @@ const Sidebar: React.FC<{ className?: string }> = ({ className = '' }) => {
                 </div>
             </div>
 
-            {/* User Profile Section */}
-            <div className="mb-6">
-                <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-zinc-800/50 rounded-2xl border border-gray-100 dark:border-zinc-800 hover:border-accent-green/30 transition-colors cursor-pointer">
-                    <div className="size-10 rounded-full overflow-hidden border border-white dark:border-zinc-700 shadow-sm shrink-0">
-                        <img src={user?.avatar || 'https://cdn-icons-png.flaticon.com/512/847/847969.png'} className="w-full h-full object-cover" alt="User" />
-                    </div>
-                    <div className="flex flex-col min-w-0">
-                        <span className="text-[10px] uppercase tracking-wider text-text-secondary font-semibold">Xin chào</span>
-                        <span className="text-sm font-bold text-text-main truncate">{user?.name || 'Khách'}</span>
-                    </div>
-                </div>
-            </div>
+
 
             {/* Navigation */}
-            <nav className="flex-1 space-y-1 overflow-y-auto no-scrollbar pb-4">
+            <nav className="flex-1 space-y-1 overflow-visible pb-4">
                 <NavItem path="/" icon="home" label={t('common.home')} />
                 <NavItem path="/calendar" icon="calendar_month" label={t('common.calendar')} />
                 <NavItem path="/converter" icon="sync_alt" label={t('common.convert')} />
                 <NavItem path="/fortune" icon="spa" label="Xin Xăm" />
-                <NavItem path="/journal" icon="history_edu" label="Nhật Ký" />
+
+                <NavItem path="/good-days" icon="event_available" label="Xem Ngày Tốt" />
+                <NavItem path="/horoscope" icon="auto_awesome" label="Tử Vi" />
+                <NavItem path="/feng-shui" icon="landscape" label="Phong Thủy" />
+                <NavItem path="/numerology" icon="numbers" label="Thần Số Học" />
+                <NavItem path="/utilities" icon="widgets" label="Tiện Ích Hay" />
+
                 <NavItem path="/settings" icon="settings" label={t('common.settings')} />
             </nav>
 
@@ -119,15 +114,29 @@ const Sidebar: React.FC<{ className?: string }> = ({ className = '' }) => {
             <div className="mt-auto pt-4 border-t border-gray-100 dark:border-zinc-800 space-y-3">
                 {/* REMOVED: Create Event Button (Use Double Click on Calendar instead) */}
 
-                {/* --- NÚT ĐĂNG NHẬP / ĐĂNG XUẤT --- */}
+                {/* --- USER INFO & AUTH ACTIONS --- */}
                 {user ? (
-                    <button
-                        onClick={logout}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                    >
-                        <span className="material-symbols-outlined text-[18px]">logout</span>
-                        Đăng xuất
-                    </button>
+                    <div className="flex flex-col gap-2">
+                        {/* Profile Card */}
+                        <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-zinc-800/50 rounded-2xl border border-gray-100 dark:border-zinc-800">
+                            <div className="size-10 rounded-full overflow-hidden border border-white dark:border-zinc-700 shadow-sm shrink-0">
+                                <img src={user.avatar || 'https://cdn-icons-png.flaticon.com/512/847/847969.png'} className="w-full h-full object-cover" alt="User" />
+                            </div>
+                            <div className="flex flex-col min-w-0">
+                                <span className="text-[10px] uppercase tracking-wider text-text-secondary font-semibold">Xin chào</span>
+                                <span className="text-sm font-bold text-text-main truncate">{user.name}</span>
+                            </div>
+                        </div>
+
+                        {/* Logout Button */}
+                        <button
+                            onClick={logout}
+                            className="w-full flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                        >
+                            <span className="material-symbols-outlined text-[18px]">logout</span>
+                            Đăng xuất
+                        </button>
+                    </div>
                 ) : (
                     <button
                         onClick={login}

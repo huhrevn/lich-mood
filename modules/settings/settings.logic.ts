@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { handleAuthClick, getUserProfile, fetchMockCalendars } from '../../services/googleCalendarService';
+import { useAuth } from '../../contexts/AuthContext';
+import { fetchMockCalendars } from '../../services/googleCalendarService';
 
 export interface AppProfile {
     isLoggedIn: boolean;
@@ -24,8 +25,9 @@ export interface SyncConfig {
 }
 
 export const useSettingsLogic = () => {
-    const { t, language, setLanguage } = useLanguage();
+    const { t } = useLanguage();
     const [searchParams] = useSearchParams();
+    const { user, login } = useAuth();
 
     // --- SHARED STATE ---
     const [leapMonth, setLeapMonth] = useState(true);
@@ -43,12 +45,12 @@ export const useSettingsLogic = () => {
     // Profile State
     const [profile, setProfile] = useState<AppProfile>({
         isLoggedIn: false,
-        name: 'Admin User',
-        displayName: 'Admin',
-        email: 'admin@lichmood.vn',
-        avatar: 'https://ui-avatars.com/api/?name=Admin+User&background=4A7B4F&color=fff',
-        phone: '+84 90 123 4567',
-        bio: 'Người đam mê công nghệ và yêu thích sự tối giản.'
+        name: '',
+        displayName: '',
+        email: '',
+        avatar: 'https://cdn-icons-png.flaticon.com/512/847/847969.png',
+        phone: '',
+        bio: ''
     });
 
     const [isLoading, setIsLoading] = useState(false);
@@ -70,23 +72,45 @@ export const useSettingsLogic = () => {
     const [isSyncing, setIsSyncing] = useState(false);
 
     // --- EFFECTS ---
+    // Sync with AuthContext and LocalStorage
     useEffect(() => {
-        const storedProfile = localStorage.getItem('app_profile');
+        // Load extra fields from local storage
+        const storedProfile = localStorage.getItem('app_profile_extras');
+        let extras = { phone: '', bio: '', displayName: '' };
         if (storedProfile) {
             try {
-                const parsed = JSON.parse(storedProfile);
-                setProfile(prev => ({
-                    ...prev,
-                    ...parsed,
-                    displayName: parsed.displayName || parsed.name.split(' ')[0]
-                }));
+                extras = JSON.parse(storedProfile);
             } catch (e) { }
+        }
+
+        if (user) {
+            setProfile(prev => ({
+                ...prev,
+                isLoggedIn: true,
+                name: user.name,
+                email: user.email || '',
+                avatar: user.avatar,
+                displayName: extras.displayName || user.name, // Default displayName to name if not set
+                phone: extras.phone || '',
+                bio: extras.bio || ''
+            }));
+        } else {
+            // Guest / Logged out state
+            setProfile({
+                isLoggedIn: false,
+                name: 'Khách',
+                displayName: 'Khách',
+                email: '',
+                avatar: 'https://cdn-icons-png.flaticon.com/512/847/847969.png',
+                phone: '',
+                bio: ''
+            });
         }
 
         if (localStorage.getItem('app_sync_config')) {
             setSyncConfig(JSON.parse(localStorage.getItem('app_sync_config')!));
         }
-    }, []);
+    }, [user]);
 
     // --- HANDLERS ---
     const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -144,8 +168,14 @@ export const useSettingsLogic = () => {
 
         setTimeout(() => {
             setIsLoading(false);
-            localStorage.setItem('app_profile', JSON.stringify(profile));
-            window.dispatchEvent(new Event('user_profile_updated'));
+            // Save only extra fields to simpler storage to avoid conflicts with AuthContext
+            const extras = {
+                phone: profile.phone,
+                bio: profile.bio,
+                displayName: profile.displayName
+            };
+            localStorage.setItem('app_profile_extras', JSON.stringify(extras));
+
             setIsDirty(false);
             setNotification({ type: 'success', message: 'Cập nhật hồ sơ thành công!' });
             setTimeout(() => setNotification(null), 3000);
@@ -154,20 +184,8 @@ export const useSettingsLogic = () => {
 
     const startGoogleLogin = async () => {
         try {
-            await handleAuthClick();
-            const gProfile = await getUserProfile();
-            if (gProfile) {
-                const newProfile = {
-                    ...profile,
-                    isLoggedIn: true,
-                    name: gProfile.name,
-                    email: gProfile.email || profile.email,
-                    avatar: gProfile.avatar
-                };
-                setProfile(newProfile);
-                localStorage.setItem('app_profile', JSON.stringify(newProfile));
-                window.dispatchEvent(new Event('user_profile_updated'));
-            }
+            await login();
+            // User sync handled by useEffect [user]
         } catch (e) {
             console.error("Login failed", e);
         }

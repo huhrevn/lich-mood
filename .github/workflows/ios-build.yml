@@ -1,0 +1,34 @@
+name: Build iOS App
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build iOS App
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Web App
+        run: npm run build
+
+      - name: Sync Capacitor
+        run: npx cap sync
+
+      - name: Build iOS App (Archive)
+        run: |
+          cd ios
+          xcodebuild -workspace App/App.xcworkspace -scheme App -destination generic/platform=iOS -archivePath App.xcarchive archive CODE_SIGNING_ALLOWED=NO

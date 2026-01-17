@@ -62,10 +62,10 @@ const CalendarPage: React.FC = () => {
             </div>
 
             <div className="flex-1 px-2 md:px-0 mt-1 md:mt-4 w-full max-w-[1920px] 2xl:max-w-[2400px] mx-auto xl:px-6">
-                <div className="flex flex-col xl:flex-row gap-4 xl:gap-6 h-full items-start">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-start h-full">
 
                     {/* CENTER: MONTH GRID */}
-                    <section className="flex-1 w-full min-w-0 bg-white dark:bg-zinc-900 rounded-2xl md:rounded-[32px] shadow-sm border border-gray-100 dark:border-zinc-800 p-2 md:p-6 xl:p-8 animate-[fadeIn_0.3s_ease-out] flex flex-col h-fit">
+                    <section className="flex-1 w-full min-w-0 bg-white dark:bg-zinc-900 rounded-2xl md:rounded-[32px] shadow-sm border border-gray-100 dark:border-zinc-800 pt-2 md:pt-6 pb-0 animate-[fadeIn_0.3s_ease-out] flex flex-col h-fit lg:col-span-8 xl:col-span-9 overflow-hidden">
                         <CalendarGrid
                             date={state.currentDate}
                             onDateChange={actions.setCurrentDate}
@@ -78,7 +78,7 @@ const CalendarPage: React.FC = () => {
                     </section>
 
                     {/* RIGHT: DETAILS & EVENTS */}
-                    <div className="flex flex-col gap-4 xl:gap-6 w-full xl:w-[380px] 2xl:w-[420px] shrink-0 min-w-0">
+                    <div className="flex flex-col gap-4 lg:gap-6 w-full lg:col-span-4 xl:col-span-3 h-full">
 
                         <section className="bg-white dark:bg-zinc-900 rounded-2xl md:rounded-[24px] shadow-sm border border-gray-100 dark:border-zinc-800 p-4 md:p-5 animate-[slideUp_0.3s_ease-out]">
                             <div className="flex items-center gap-2 mb-3 md:mb-4 text-accent-green">

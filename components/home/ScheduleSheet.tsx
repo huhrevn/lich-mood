@@ -4,28 +4,47 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { useEvents } from '../../contexts/EventContext'; // Import hook
 import { getEventColor } from '../../services/googleCalendarService';
 
+const VARIED_COLORS = [
+    '#4285F4', // Blue
+    '#34A853', // Green
+    '#EA4335', // Red
+    '#FBBC05', // Yellow (Darker for readability)
+    '#8E44AD', // Purple
+    '#009688', // Teal
+    '#F1C40F', // Sunflower
+    '#E67E22', // Carrot
+    '#E91E63', // Pink
+    '#3F51B5'  // Indigo
+];
+
 const ScheduleSheet: React.FC = () => {
     const { t } = useLanguage();
     const { events } = useEvents(); // Lấy sự kiện từ context
 
-    // Lọc và lấy các sự kiện của NGÀY HÔM NAY
-    const todayEvents = useMemo(() => {
+    // Filter upcoming events (from today onwards)
+    const upcomingEvents = useMemo(() => {
         const now = new Date();
-        const todayStr = now.toDateString();
+        now.setHours(0, 0, 0, 0); // Start of today
 
         const filtered = events.filter(evt => {
             const startVal = evt.start?.dateTime || evt.start?.date || evt.start;
             if (!startVal) return false;
             const evtDate = new Date(startVal);
-            return !isNaN(evtDate.getTime()) && evtDate.toDateString() === todayStr;
+            return !isNaN(evtDate.getTime()) && evtDate >= now;
         });
 
-        // Sắp xếp tăng dần theo thời gian
+        // Sort by time
         const getEventTime = (e: any) => new Date(e.start?.dateTime || e.start?.date || e.start).getTime();
         filtered.sort((a, b) => getEventTime(a) - getEventTime(b));
 
-        return filtered;
+        return filtered.slice(0, 5); // Limit to 5 items
     }, [events]);
+
+    const isSameDay = (d1: Date, d2: Date) => {
+        return d1.getFullYear() === d2.getFullYear() &&
+            d1.getMonth() === d2.getMonth() &&
+            d1.getDate() === d2.getDate();
+    };
 
     return (
         <section className="
@@ -44,9 +63,9 @@ const ScheduleSheet: React.FC = () => {
             <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-bold text-text-main flex items-center gap-2">
                     {t('home.schedule')}
-                    {todayEvents.length > 0 && (
+                    {upcomingEvents.length > 0 && (
                         <span className="flex items-center justify-center size-6 bg-accent-green text-white rounded-full text-[11px] font-bold shadow-sm">
-                            {todayEvents.length}
+                            {upcomingEvents.length}
                         </span>
                     )}
                 </h2>
@@ -58,23 +77,45 @@ const ScheduleSheet: React.FC = () => {
 
             {/* Timeline List */}
             <div className="flex flex-col gap-4">
-                {todayEvents.length > 0 ? (
-                    todayEvents.map((evt, index) => {
+                {upcomingEvents.length > 0 ? (
+                    upcomingEvents.map((evt, index) => {
                         const startVal = evt.start?.dateTime || evt.start?.date || evt.start;
-                        const evtDate = new Date(startVal);
-                        const isAm = evtDate.getHours() < 12;
-                        const timeStr = evtDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+                        const isAllDay = !!evt.start?.date; // Google Calendar convention: date exists = all day
 
-                        const eventColor = getEventColor(evt.colorId);
+                        const evtDate = new Date(startVal);
+                        const now = new Date();
+                        const isToday = isSameDay(evtDate, now);
+
+                        const timeStr = isAllDay
+                            ? 'Cả ngày'
+                            : evtDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+
+                        const dateStr = evtDate.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
+
+                        // Logic tạo màu ngẫu nhiên (theo index) để tạo điểm nhấn
+                        // Nếu sự kiện có màu riêng (khác màu mặc định lịch) thì giữ, nếu không thì dùng bảng màu vui nhộn
+                        const originalColor = evt.backgroundColor || getEventColor(evt.colorId);
+                        // Tạm thời override bằng bảng màu theo index để đảm bảo độ rực rỡ như user yêu cầu
+                        const eventColor = VARIED_COLORS[index % VARIED_COLORS.length];
+
                         // Map màu Google sang icon phù hợp (vẫn giữ logic icon cũ cho sinh động)
                         const icons = ['videocam', 'check_box', 'person', 'event', 'task', 'mail'];
                         const icon = icons[index % icons.length];
 
                         return (
                             <div key={evt.id || index} className="flex group">
-                                <div className="flex flex-col items-end pr-3.5 w-[3.5rem] pt-1.5">
-                                    <span className="text-sm font-bold text-text-main">{timeStr}</span>
-                                    <span className="text-[10px] text-gray-400 dark:text-zinc-500 font-bold tracking-wide">{isAm ? 'AM' : 'PM'}</span>
+                                <div className="flex flex-col items-end pr-3.5 w-[3.5rem] pt-1.5 shrink-0">
+                                    {isToday ? (
+                                        <>
+                                            <span className="text-sm font-bold text-text-main">{timeStr}</span>
+                                            <span className="text-[10px] text-accent-green font-bold tracking-wide">HÔM NAY</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <span className="text-sm font-bold text-gray-500">{dateStr}</span>
+                                            <span className="text-[10px] text-gray-400 font-bold tracking-wide">{timeStr}</span>
+                                        </>
+                                    )}
                                 </div>
                                 <div
                                     className={`flex-1 relative pl-4 py-3 border-l-[3px] bg-white dark:bg-zinc-800 rounded-r-2xl shadow-soft flex flex-col gap-1 ring-1 ring-gray-100/80 dark:ring-zinc-700/50 hover:ring-opacity-50 transition-all`}
@@ -84,7 +125,7 @@ const ScheduleSheet: React.FC = () => {
                                     <div className="flex items-center gap-1.5">
                                         <span className={`material-symbols-outlined text-[14px]`} style={{ color: eventColor }}>{icon}</span>
                                         <span className="text-xs text-gray-500 dark:text-zinc-400 font-medium line-clamp-1">
-                                            {evt.description || 'Google Calendar'}
+                                            {evt.description || (isToday ? 'Sự kiện hôm nay' : 'Sự kiện sắp tới')}
                                         </span>
                                     </div>
                                 </div>
@@ -96,10 +137,8 @@ const ScheduleSheet: React.FC = () => {
                         <p className="text-sm text-gray-400 italic">Không có sự kiện sắp tới</p>
                     </div>
                 )}
-
-                {/* Tomorrow Separator (Nếu cần logic phức tạp hơn thì thêm sau, tạm thời ẩn nếu ko có data) */}
-                {/* ... */}
-            </div>
+            </div>     {/* Tomorrow Separator (Nếu cần logic phức tạp hơn thì thêm sau, tạm thời ẩn nếu ko có data) */}
+            {/* ... */}
         </section>
     );
 };
