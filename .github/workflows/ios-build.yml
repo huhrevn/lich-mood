@@ -17,7 +17,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Install Dependencies
         run: npm install
@@ -33,7 +33,15 @@ jobs:
           cd ios/App
           pod install
 
-      - name: Build iOS App (Debug)
+      - name: Disable Signing (CI Hack)
+        run: |
+          cd ios/App
+          sed -i '' 's/DevelopmentTeam = .*/DevelopmentTeam = "";/g' App.xcodeproj/project.pbxproj
+          sed -i '' 's/ProvisioningStyle = .*/ProvisioningStyle = Manual;/g' App.xcodeproj/project.pbxproj
+          sed -i '' 's/CODE_SIGN_IDENTITY = .*/CODE_SIGN_IDENTITY = "";/g' App.xcodeproj/project.pbxproj
+          sed -i '' 's/CODE_SIGN_STYLE = .*/CODE_SIGN_STYLE = Manual;/g' App.xcodeproj/project.pbxproj
+
+      - name: Build iOS App (Verify Only)
         run: |
           cd ios
-          xcodebuild -workspace App/App.xcworkspace -scheme App -destination generic/platform=iOS -configuration Debug build CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=NO
+          xcodebuild -workspace App/App.xcworkspace -scheme App -destination generic/platform=iOS -configuration Release clean build CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" CODE_SIGNING_ALLOWED=NO
