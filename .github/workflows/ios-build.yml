@@ -28,7 +28,12 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync
 
-      - name: Build iOS App (Archive)
+      - name: Update CocoaPods
+        run: |
+          cd ios/App
+          pod install
+
+      - name: Build iOS App (Debug)
         run: |
           cd ios
-          xcodebuild -workspace App/App.xcworkspace -scheme App -destination generic/platform=iOS -archivePath App.xcarchive archive CODE_SIGNING_ALLOWED=NO
+          xcodebuild -workspace App/App.xcworkspace -scheme App -destination generic/platform=iOS -configuration Debug build CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=NO
