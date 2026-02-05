@@ -266,7 +266,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ date, onDateChange, onToggl
                                 `}>
                                     <div>{dayInfo.lunarDay === 1 ? `${dayInfo.lunarDay}/${dayInfo.lunarMonth}` : dayInfo.lunarDay}</div>
                                     {isLunarNewYear && (
-                                        <div className="text-[7px] md:text-[9px] font-bold text-red-600 mt-0.5 whitespace-nowrap -translate-x-2 md:-translate-x-4">Tết Nguyên Đán</div>
+                                        <div className="text-[6px] md:text-[9px] font-bold text-red-600 mt-0.5 whitespace-nowrap -translate-x-1.5 md:-translate-x-4">Tết Nguyên Đán</div>
                                     )}
                                 </div>
                             </div>
