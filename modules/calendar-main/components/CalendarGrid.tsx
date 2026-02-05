@@ -231,6 +231,8 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ date, onDateChange, onToggl
                     const hasEvent = dayEvents && dayEvents.length > 0;
                     // ------------------------------------
 
+                    const isLunarNewYear = dayInfo.lunarMonth === 1 && (dayInfo.lunarDay === 1 || dayInfo.lunarDay === 2 || dayInfo.lunarDay === 3);
+
                     return (
                         <div
                             key={dayInfo.day}
@@ -243,7 +245,6 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ date, onDateChange, onToggl
                                 }
                             `}
                         >
-                            {/* --- HEADER: Date Numbers (Solar on top, Lunar below) --- */}
                             {/* --- HEADER: Date Numbers (Solar centered, Lunar below) --- */}
                             <div className="flex flex-col items-center justify-center pt-2 md:pt-3">
                                 {/* Solar Date */}
@@ -253,17 +254,20 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ date, onDateChange, onToggl
                                     </div>
                                 ) : (
                                     <span className={`text-[12px] md:text-[19px] font-extrabold leading-tight mb-0.5
-                                        ${isSunday ? 'text-red-600' : isSaturday ? 'text-orange-600' : 'text-gray-900 dark:text-gray-100'}
+                                        ${isLunarNewYear || isSunday ? 'text-red-600' : isSaturday ? 'text-orange-600' : 'text-gray-900 dark:text-gray-100'}
                                     `}>
                                         {dayInfo.day}
                                     </span>
                                 )}
 
                                 {/* Lunar Date (Directly below Solar) */}
-                                <div className={`text-[8px] md:text-[10px] font-medium leading-tight translate-x-2 md:translate-x-4
-                                    ${dayInfo.lunarDay === 1 || dayInfo.lunarDay === 15 ? 'text-blue-600 font-bold' : 'text-gray-400 dark:text-gray-500'}
+                                <div className={`flex flex-col items-center text-[8px] md:text-[10px] font-medium leading-tight translate-x-2 md:translate-x-4
+                                    ${isLunarNewYear || dayInfo.lunarDay === 1 || dayInfo.lunarDay === 15 ? 'text-red-600 font-bold' : 'text-gray-400 dark:text-gray-500'}
                                 `}>
-                                    {dayInfo.lunarDay === 1 ? `${dayInfo.lunarDay}/${dayInfo.lunarMonth}` : dayInfo.lunarDay}
+                                    <div>{dayInfo.lunarDay === 1 ? `${dayInfo.lunarDay}/${dayInfo.lunarMonth}` : dayInfo.lunarDay}</div>
+                                    {isLunarNewYear && (
+                                        <div className="text-[7px] md:text-[9px] font-bold text-red-600 mt-0.5 whitespace-nowrap -translate-x-2 md:-translate-x-4">Tết Nguyên Đán</div>
+                                    )}
                                 </div>
                             </div>
 

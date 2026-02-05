@@ -140,6 +140,8 @@ const HomeMonthCalendar: React.FC<HomeMonthCalendarProps> = ({ date, onDateChang
                     const isSunday = dayInfo.dayOfWeek === 0;
                     const isSaturday = dayInfo.dayOfWeek === 6;
 
+                    const isLunarNewYear = dayInfo.lunarMonth === 1 && (dayInfo.lunarDay === 1 || dayInfo.lunarDay === 2 || dayInfo.lunarDay === 3);
+
                     return (
                         <div
                             key={dayInfo.day}
@@ -160,7 +162,7 @@ const HomeMonthCalendar: React.FC<HomeMonthCalendarProps> = ({ date, onDateChang
                                     ? 'top-1 right-1 lg:top-0.5 lg:right-1.5 text-sm md:text-3xl lg:text-base text-white'
                                     : 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-full text-base md:text-xl lg:text-base text-gray-700 dark:text-gray-200'
                                 }
-                                ${!isSelected && isSunday ? 'text-red-500' : ''}
+                                ${!isSelected && (isLunarNewYear || isSunday) ? 'text-red-500' : ''}
                                 ${!isSelected && isSaturday ? 'text-orange-500' : ''}
                             `}>
                                 {dayInfo.day}
@@ -171,7 +173,7 @@ const HomeMonthCalendar: React.FC<HomeMonthCalendarProps> = ({ date, onDateChang
                                     ? 'bottom-1 left-1 lg:bottom-0.5 lg:left-1.5 text-[8px] md:text-sm lg:text-[8px] text-white/80'
                                     : 'top-1/2 left-1/2 -translate-x-1/2 translate-y-1.5 lg:translate-y-1 text-[8px] md:text-[10px] lg:text-[9px] text-gray-400 dark:text-gray-500'
                                 }
-                                ${!isSelected && (dayInfo.lunarDay === 1 || dayInfo.lunarDay === 15) ? 'text-primary font-bold' : ''}
+                                ${!isSelected && (isLunarNewYear || dayInfo.lunarDay === 1 || dayInfo.lunarDay === 15) ? 'text-red-600 font-bold' : ''}
                             `}>
                                 {dayInfo.lunarDay === 1 ? `${dayInfo.lunarDay}/${dayInfo.lunarMonth}` : dayInfo.lunarDay}
                             </span>
