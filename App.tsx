@@ -11,6 +11,9 @@ import ConverterScreen from './screens/ConverterScreen';
 import WorldClockScreen from './screens/WorldClockScreen';
 import PrayersScreen from './screens/PrayersScreen';
 import SettingsScreen from './screens/SettingsScreen';
+import GoodDaysScreen from './screens/GoodDaysScreen';
+import HoroscopeScreen from './screens/HoroscopeScreen';
+import MemorialScreen from './screens/MemorialScreen';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { EventProvider } from './contexts/EventContext';
 import { AuthProvider } from './contexts/AuthContext'; // Import AuthProvider
@@ -62,8 +65,9 @@ const App: React.FC = () => {
                   <Route path="prayers" element={<PrayersScreen />} />
 
                   {/* New Feature Placeholders */}
-                  <Route path="good-days" element={<FeatureUnderDevelopment title="Xem Ngày Tốt" />} />
-                  <Route path="horoscope" element={<FeatureUnderDevelopment title="Tử Vi" />} />
+                  <Route path="good-days" element={<GoodDaysScreen />} />
+                  <Route path="memorial" element={<MemorialScreen />} />
+                  <Route path="horoscope" element={<HoroscopeScreen />} />
                   <Route path="feng-shui" element={<FeatureUnderDevelopment title="Phong Thủy" />} />
                   <Route path="numerology" element={<FeatureUnderDevelopment title="Thần Số Học" />} />
                   <Route path="utilities" element={<FeatureUnderDevelopment title="Tiện Ích Hay" />} />
