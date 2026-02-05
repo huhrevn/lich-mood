@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { listUpcomingEvents, getUserProfile, getPrimaryCalendarColor } from '../services/googleCalendarService';
+import { getAllMemorialsWithDates } from '../services/memorialService';
 
 interface EventContextType {
   events: any[];
@@ -40,11 +41,22 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setLoading(true);
 
     try {
-      // Parallel fetch: Events + Primary Color
       const [data, primaryColor] = await Promise.all([
         listUpcomingEvents(),
         getPrimaryCalendarColor()
       ]);
+
+      const memorialEvents = getAllMemorialsWithDates().map(m => ({
+        id: `memorial-${m.memorial.id}`,
+        summary: `Giỗ: ${m.memorial.name} (${m.memorial.relation})`,
+        start: { date: m.solarDate.toISOString().split('T')[0] },
+        end: { date: m.solarDate.toISOString().split('T')[0] },
+        isAllDay: true,
+        backgroundColor: '#e53935', // Red/Tomato color for memorials
+        description: `Ngày giỗ của ${m.memorial.name}. Âm lịch: ${m.memorial.lunarDay}/${m.memorial.lunarMonth}.`,
+        creator: { email: 'system@memorial', displayName: 'System' },
+        isMemorial: true
+      }));
 
       if (data) {
         const cleanData = data.map((item: any) => ({
@@ -59,8 +71,8 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           description: item.description,
           creator: item.creator
         }));
-        setEvents(cleanData);
-        console.log("Đã cập nhật kho sự kiện:", cleanData.length, "mục với màu:", primaryColor);
+        setEvents([...cleanData, ...memorialEvents]);
+        console.log("Đã cập nhật kho sự kiện:", cleanData.length + memorialEvents.length, "mục (bao gồm ngày giỗ)");
       }
     } catch (error) {
       console.error("Lỗi khi tải sự kiện:", error);

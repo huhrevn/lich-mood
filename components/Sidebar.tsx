@@ -102,6 +102,7 @@ const Sidebar: React.FC<{ className?: string }> = ({ className = '' }) => {
                 <NavItem path="/fortune" icon="spa" label="Xin Xăm" />
 
                 <NavItem path="/good-days" icon="event_available" label="Xem Ngày Tốt" />
+                <NavItem path="/memorial" icon="event_busy" label="Nhắc Ngày Giỗ" />
                 <NavItem path="/horoscope" icon="auto_awesome" label="Tử Vi" />
                 <NavItem path="/feng-shui" icon="landscape" label="Phong Thủy" />
                 <NavItem path="/numerology" icon="numbers" label="Thần Số Học" />
